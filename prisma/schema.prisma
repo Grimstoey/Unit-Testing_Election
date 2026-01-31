@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ================= ROLE & USER =================
+model user {
+  id        Int    @id @default(autoincrement())
+  citizenId String @unique
+  password  String
+
+  firstName String
+  lastName  String
+  address   String
+
+  provinceId Int
+  areaId     Int
+
+  province province     @relation(fields: [provinceId], references: [id])
+  area     districtArea @relation(fields: [areaId], references: [id])
+
+  roles userRole[]
+  vote  vote?
+
+  createdAt          DateTime          @default(now())
+  electionDistrict   electionDistrict? @relation(fields: [electionDistrictId], references: [id])
+  electionDistrictId Int?
+
+  @@index([provinceId, areaId])
+}
+
+//เขตถูกคำนวณตอน runtime เท่านั้น
+
+// ================= ROLE =================
+model role {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  userRoles userRole[]
+}
+
+model userRole {
+  userId Int
+  roleId Int
+
+  user user @relation(fields: [userId], references: [id])
+  role role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+// ================= LOCATION =================
+model province {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  areas     districtArea[]
+  districts electionDistrict[]
+  users     user[]
+}
+
+model districtArea {
+  id         Int    @id @default(autoincrement())
+  name       String
+  provinceId Int
+
+  province province @relation(fields: [provinceId], references: [id])
+
+  districtMappings districtAreaOnElectionDistrict[]
+
+  users user[]
+
+  @@unique([name, provinceId])
+}
+
+// ================= ELECTION DISTRICT =================
+model electionDistrict {
+  id         Int @id @default(autoincrement())
+  number     Int // เขตที่ 1, 2, 3
+  provinceId Int
+
+  province province @relation(fields: [provinceId], references: [id])
+
+  areas      districtAreaOnElectionDistrict[]
+  candidates candidate[]
+
+  isClosed Boolean @default(false)
+  users    user[]
+
+  @@unique([provinceId, number])
+}
+
+// ================= AREA + DISTRICT =================
+model districtAreaOnElectionDistrict {
+  districtAreaId     Int
+  electionDistrictId Int
+
+  districtArea     districtArea     @relation(fields: [districtAreaId], references: [id])
+  electionDistrict electionDistrict @relation(fields: [electionDistrictId], references: [id])
+
+  @@id([districtAreaId, electionDistrictId])
+}
+
+// ================= PARTY =================
+model party {
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  logoUrl String
+  policy  String
+
+  candidates candidate[]
+}
+
+// ================= CANDIDATE =================
+model candidate {
+  id       Int    @id @default(autoincrement())
+  number   Int
+  fullName String
+  imageUrl String
+
+  partyId    Int
+  districtId Int
+
+  party    party            @relation(fields: [partyId], references: [id])
+  district electionDistrict @relation(fields: [districtId], references: [id])
+
+  votes vote[]
+
+  @@unique([number, districtId])
+}
+
+// ================= VOTE =================
+model vote {
+  id          Int @id @default(autoincrement())
+  userId      Int @unique
+  candidateId Int
+
+  user      user      @relation(fields: [userId], references: [id])
+  candidate candidate @relation(fields: [candidateId], references: [id])
+
+  createdAt DateTime @default(now())
+}
