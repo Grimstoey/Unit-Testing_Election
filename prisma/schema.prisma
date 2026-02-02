@@ -13,7 +13,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ================= ROLE & USER =================
+// ================= Role & User =================
 model user {
   id        Int    @id @default(autoincrement())
   citizenId String @unique
@@ -24,22 +24,21 @@ model user {
   address   String
 
   provinceId Int
-  areaId     Int
+  districtId Int
 
-  province province     @relation(fields: [provinceId], references: [id])
-  area     districtArea @relation(fields: [areaId], references: [id])
+  province province @relation(fields: [provinceId], references: [id])
+  district district @relation(fields: [districtId], references: [id])
 
   roles userRole[]
   vote  vote?
 
-  createdAt          DateTime          @default(now())
-  electionDistrict   electionDistrict? @relation(fields: [electionDistrictId], references: [id])
-  electionDistrictId Int?
+  createdAt      DateTime      @default(now())
+  constituency   constituency? @relation(fields: [constituencyId], references: [id])
+  constituencyId Int?
+  //เขตถูกคำนวณตอน runtime เท่านั้น
 
-  @@index([provinceId, areaId])
+  @@index([provinceId, districtId])
 }
-
-//เขตถูกคำนวณตอน runtime เท่านั้น
 
 // ================= ROLE =================
 model role {
@@ -58,59 +57,64 @@ model userRole {
   @@id([userId, roleId])
 }
 
-// ================= LOCATION =================
+// ================= Location =================
+// จังหวัด
 model province {
   id   Int    @id @default(autoincrement())
   name String @unique
 
-  areas     districtArea[]
-  districts electionDistrict[]
-  users     user[]
+  districts      district[]
+  constituencies constituency[]
+  users          user[]
 }
 
-model districtArea {
+// อำเภอ
+model district {
   id         Int    @id @default(autoincrement())
   name       String
   provinceId Int
 
   province province @relation(fields: [provinceId], references: [id])
 
-  districtMappings districtAreaOnElectionDistrict[]
+  districtMappings districtInConstituency[]
 
   users user[]
 
   @@unique([name, provinceId])
 }
 
-// ================= ELECTION DISTRICT =================
-model electionDistrict {
+// ================= Constituency =================
+// เขตเลือกตั้ง
+model constituency {
   id         Int @id @default(autoincrement())
   number     Int // เขตที่ 1, 2, 3
   provinceId Int
 
   province province @relation(fields: [provinceId], references: [id])
 
-  areas      districtAreaOnElectionDistrict[]
-  candidates candidate[]
+  districtInConstituencies districtInConstituency[]
+  candidates               candidate[]
 
   isClosed Boolean @default(false)
   users    user[]
+  votes    vote[]
 
   @@unique([provinceId, number])
 }
 
-// ================= AREA + DISTRICT =================
-model districtAreaOnElectionDistrict {
-  districtAreaId     Int
-  electionDistrictId Int
+// ================= Constituency + district =================
+// อำเภอในเขตเลือกตั้ง เช่น อำเภอ A อยู่เขต 1
+model districtInConstituency {
+  districtId     Int
+  constituencyId Int
 
-  districtArea     districtArea     @relation(fields: [districtAreaId], references: [id])
-  electionDistrict electionDistrict @relation(fields: [electionDistrictId], references: [id])
+  district     district     @relation(fields: [districtId], references: [id])
+  constituency constituency @relation(fields: [constituencyId], references: [id])
 
-  @@id([districtAreaId, electionDistrictId])
+  @@id([districtId, constituencyId])
 }
 
-// ================= PARTY =================
+// ================= Party =================
 model party {
   id      Int    @id @default(autoincrement())
   name    String @unique
@@ -120,32 +124,34 @@ model party {
   candidates candidate[]
 }
 
-// ================= CANDIDATE =================
+// ================= Candidate =================
 model candidate {
   id       Int    @id @default(autoincrement())
   number   Int
   fullName String
   imageUrl String
 
-  partyId    Int
-  districtId Int
+  partyId        Int
+  constituencyId Int
 
-  party    party            @relation(fields: [partyId], references: [id])
-  district electionDistrict @relation(fields: [districtId], references: [id])
+  party        party        @relation(fields: [partyId], references: [id])
+  constituency constituency @relation(fields: [constituencyId], references: [id])
 
   votes vote[]
 
-  @@unique([number, districtId])
+  @@unique([number, constituencyId])
 }
 
-// ================= VOTE =================
+// ================= Vote =================
 model vote {
-  id          Int @id @default(autoincrement())
-  userId      Int @unique
-  candidateId Int
+  id             Int @id @default(autoincrement())
+  userId         Int @unique
+  candidateId    Int
+  constituencyId Int
 
-  user      user      @relation(fields: [userId], references: [id])
-  candidate candidate @relation(fields: [candidateId], references: [id])
+  user         user         @relation(fields: [userId], references: [id])
+  candidate    candidate    @relation(fields: [candidateId], references: [id])
+  constituency constituency @relation(fields: [constituencyId], references: [id])
 
   createdAt DateTime @default(now())
 }

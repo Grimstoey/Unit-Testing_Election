@@ -3,9 +3,9 @@ import { prisma } from '../src/lib/prisma'
 import {
   seedRole,
   seedProvince,
-  seedDistrictArea,
-  seedElectionDistrict,
-  seedDistrictAreaMapping,
+  seedDistrict,
+  seedConstituency,
+  seedDistrictInConstituency,
   seedParty,
   seedCandidate,
 } from '../src/db'
@@ -13,9 +13,9 @@ import {
 async function main() {
   await seedRole()
   await seedProvince()
-  await seedDistrictArea()
-  await seedElectionDistrict()
-  await seedDistrictAreaMapping()
+  await seedDistrict()
+  await seedConstituency()
+  await seedDistrictInConstituency()
   await seedParty()
   await seedCandidate()
 }
