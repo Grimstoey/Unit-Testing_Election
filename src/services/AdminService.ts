@@ -1,4 +1,8 @@
-import {getAllConstituencies, getConstituencyById} from '@/repositories/AdminRepository'
+import {
+  getAllConstituencies,
+  getAllEventsWithProvincePagination,
+  getConstituencyById
+} from '@/repositories/AdminRepository'
 
 export async function findAllConstituenciesService() {
   const result = await getAllConstituencies()
@@ -17,6 +21,11 @@ export async function findAllConstituenciesService() {
     data: result,
   }
 }
+
 export  async  function findConstituencyById(id: number){
     return getConstituencyById(id);
+}
+export async  function getAllEventsWithPagination(keyword: string,pageSize: number, pageNo: number) {
+  const pageEvents = await getAllEventsWithProvincePagination(keyword,pageSize, pageNo);
+  return pageEvents;
 }
