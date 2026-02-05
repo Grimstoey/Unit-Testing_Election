@@ -30,13 +30,13 @@ export async function registerService(regisInput: RegisterUserInput) {
     };
   }
 
-  // default role = VOTER
-  const role = await findRoleByName("VOTER");
+  // default role = ROLE_VOTER
+  const role = await findRoleByName("ROLE_VOTER");
   if (!role) {
     return {
       ok: false as const,
       status: 500,
-      message: "Default role VOTER not found",
+      message: "Default role ROLE_VOTER not found",
     };
   }
 
