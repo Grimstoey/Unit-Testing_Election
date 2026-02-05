@@ -19,11 +19,12 @@ export async function getDistrictsByProvinceIdController(
   req: Request,
   res: Response,
 ) {
-  console.log(req.params)
   const provinceId = req?.params?.provinceId
-  console.log(provinceId)
   if (!provinceId) {
     return res.status(400).json({ message: 'Province ID is required' })
+  }
+  if (isNaN(Number(provinceId))) {
+    return res.status(400).json({ message: 'Province ID must be a number' })
   }
 
   const result = await getDistrictsByProvinceIdService(Number(provinceId))
@@ -43,6 +44,9 @@ export async function getConstituenciesByDistrictIdController(
 
   if (!districtId) {
     return res.status(400).json({ message: 'District ID is required' })
+  }
+  if (isNaN(Number(districtId))) {
+    return res.status(400).json({ message: 'District ID must be a number' })
   }
 
   const result = await getConstituenciesByDistrictIdService(Number(districtId))

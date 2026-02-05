@@ -10,8 +10,8 @@ export async function getAllProvincesService() {
   if (!result) {
     return {
       ok: false as const,
-      status: 500,
-      message: 'Internal server error',
+      status: 404,
+      message: 'Province not found',
     }
   }
 
@@ -28,8 +28,8 @@ export async function getDistrictsByProvinceIdService(provinceId: number) {
   if (!result) {
     return {
       ok: false as const,
-      status: 500,
-      message: 'Internal server error',
+      status: 404,
+      message: 'Province not found',
     }
   }
 
