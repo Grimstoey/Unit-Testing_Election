@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express'
 import 'dotenv/config'
-import authRoutes from "./routes/AuthRoutes"
+import authRoutes from './routes/AuthRoutes'
+import adminRoutes from './routes/AdminRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -12,7 +13,8 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 // routes
-app.use("/auth", authRoutes);
+app.use('/auth', authRoutes)
+app.use('/admin', adminRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
