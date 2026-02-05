@@ -3,17 +3,28 @@ import { prisma } from '../lib/prisma'
 export async function getAllConstituencies() {
   return prisma.constituency.findMany()
 }
-export async function getConstituencyByRole(id: number, role: string) {
-  return prisma.constituency.findMany({
-    where: { id: id  },
+export async function getAllUser() {
+  return prisma.user.findMany()
+}
+export async function getUserByRole(role: string) {
+  return prisma.role.findUnique({
+    where: { name: role },
     select: {
       id: true,
-      provinceId: true,
-      isClosed: true,
-      province:{
+      name: true,
+      userRoles: {
         select: {
-          name: true
-        }
+          user: {
+            select:{
+                id: true,
+                citizenId: true,
+                firstName: true,
+                lastName: true,
+                address: true,
+                createdAt: true,
+            }
+          }
+        },
       }
     }
   })

@@ -1,11 +1,11 @@
-import { findAllConstituenciesController } from '@/controllers/AdminController'
+import {findAllConstituenciesController, findAllUserController} from '@/controllers/AdminController'
 import { Router } from 'express'
 import * as service from "../services/AdminService";
 import {
     addConstituency,
     deleteConstituency,
     editConstituency,
-    getConstituencyById
+    getConstituencyById, getUserByRole
 } from "@/repositories/AdminRepository";
 import * as console from "node:console";
 import {findAllConstituenciesService} from "../services/AdminService";
@@ -14,10 +14,19 @@ const router = Router()
 
 // POST /auth/register
 router.get('/constituencies', findAllConstituenciesController)
-router.get('/users', findAllConstituenciesController)
+router.get('/users', findAllUserController)
 router.get("/constituencies/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     const event = await getConstituencyById(id);
+    if (event) {
+        res.json(event);
+    } else {
+        res.status(404).send("Event not found");
+    }
+});
+router.get("/users/:role", async (req, res) => {
+    const role = req.params.role;
+    const event = await getUserByRole(role);
     if (event) {
         res.json(event);
     } else {
