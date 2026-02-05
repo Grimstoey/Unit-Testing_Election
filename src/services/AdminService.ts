@@ -1,4 +1,4 @@
-import { getAllConstituencies } from '@/repositories/AdminRepository'
+import {getAllConstituencies, getConstituencyById} from '@/repositories/AdminRepository'
 
 export async function findAllConstituenciesService() {
   const result = await getAllConstituencies()
@@ -16,4 +16,7 @@ export async function findAllConstituenciesService() {
     status: 200,
     data: result,
   }
+}
+export  async  function findConstituencyById(id: number){
+    return getConstituencyById(id);
 }
