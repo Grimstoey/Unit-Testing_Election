@@ -1,4 +1,4 @@
-import { Prisma } from "../generated/prisma";
+import { districtInConstituencyCreateManyInput } from "@/generated/prisma/models";
 import { prisma } from "../lib/prisma";
 
 /*
@@ -67,7 +67,7 @@ const DISTRICT_IN_CONSTITUENCY_MAP: Record<string, Record<number, string[]>> = {
 };
 
 export async function seedDistrictInConstituency() {
-  const data: Prisma.districtInConstituencyCreateManyInput[] = [];
+  const data: districtInConstituencyCreateManyInput[] = [];
 
   for (const [provinceName, constituencies] of Object.entries(
     DISTRICT_IN_CONSTITUENCY_MAP,
