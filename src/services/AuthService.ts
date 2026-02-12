@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { RegisterUserInput } from "../models/user/registerUserDto";
 import { LoginUserInput } from "../models/user/loginUserDto";
+import { RegisterUserInput } from "../models/user/registerUserDto";
 import { findRoleByName } from "../repositories/RoleRepository";
 import {
   createUser,
@@ -85,7 +85,7 @@ export async function loginService(loginInput: LoginUserInput) {
   }
 
   // role names
-  const roles = user.roles.map((r) => r.role.name);
+  const roles = user.roles.map((r: { role: { name: string } }) => r.role.name);
 
   // sign token
   const accessToken = signAccessToken({
@@ -98,17 +98,17 @@ export async function loginService(loginInput: LoginUserInput) {
     ok: true as const,
     data: {
       accessToken,
-    //   user: {
-    //     id: user.id,
-    //     citizenId: user.citizenId,
-    //     firstName: user.firstName,
-    //     lastName: user.lastName,
-    //     address: user.address,
-    //     province: user.province,
-    //     district: user.district,
-    //     roles,
-    //     createdAt: user.createdAt,
-    //   },
+      //   user: {
+      //     id: user.id,
+      //     citizenId: user.citizenId,
+      //     firstName: user.firstName,
+      //     lastName: user.lastName,
+      //     address: user.address,
+      //     province: user.province,
+      //     district: user.district,
+      //     roles,
+      //     createdAt: user.createdAt,
+      //   },
     },
   };
 }
@@ -128,7 +128,7 @@ export async function meService(token: string) {
     };
   }
 
-  const roles = user.roles.map((r) => r.role.name);
+  const roles = user.roles.map((r: { role: { name: string } }) => r.role.name);
 
   return {
     ok: true as const,
