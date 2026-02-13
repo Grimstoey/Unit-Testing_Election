@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
-import { RegisterUserInput } from "../models/user/registerUserDto";
 import { LoginUserInput } from "../models/user/loginUserDto";
+import { RegisterUserInput } from "../models/user/registerUserDto";
 import { findRoleByName } from "../repositories/RoleRepository";
-import {createUser, findByCitizenId, findByUserId} from "../repositories/UserRepository"; // ใช้ repo ของ User
+import { createUser, findByCitizenId } from "../repositories/UserRepository";
 import { signAccessToken, verifyAccessToken } from "../utils/jwt";
+import { findByUserIdService } from "./UserService";
 
 export async function registerService(regisInput: RegisterUserInput) {
   const {
@@ -81,7 +82,7 @@ export async function loginService(loginInput: LoginUserInput) {
   }
 
   // role names
-  const roles = user.roles.map((r) => r.role.name);
+  const roles = user.roles.map((r: { role: { name: string } }) => r.role.name);
 
   // sign token
   const accessToken = signAccessToken({
@@ -94,17 +95,6 @@ export async function loginService(loginInput: LoginUserInput) {
     ok: true as const,
     data: {
       accessToken,
-    //   user: {
-    //     id: user.id,
-    //     citizenId: user.citizenId,
-    //     firstName: user.firstName,
-    //     lastName: user.lastName,
-    //     address: user.address,
-    //     province: user.province,
-    //     district: user.district,
-    //     roles,
-    //     createdAt: user.createdAt,
-    //   },
     },
   };
 }
@@ -114,30 +104,5 @@ export async function meService(token: string) {
     throw new Error("JWT_SECRET is not defined");
   }
   const decoded = verifyAccessToken(token);
-  const user = await findByUserId(decoded.userId);
-
-  if (!user) {
-    return {
-      ok: false as const,
-      status: 404,
-      message: "User not found",
-    };
-  }
-
-  const roles = user.roles.map((r) => r.role.name);
-
-  return {
-    ok: true as const,
-    data: {
-      id: user.id,
-      citizenId: user.citizenId,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      address: user.address,
-      province: user.province,
-      district: user.district,
-      createdAt: user.createdAt,
-      roles,
-    },
-  };
+  return findByUserIdService(decoded.userId);
 }
