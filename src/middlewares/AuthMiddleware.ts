@@ -36,7 +36,7 @@ export async function requireAuth(
 
     req.body.user = userInfo;
 
-    return next();
+    return next(); 
   } catch {
     return res.status(401).json({ message: "Invalid or expired token" });
   }

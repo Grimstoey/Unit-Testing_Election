@@ -2,11 +2,7 @@ import bcrypt from "bcryptjs";
 import { RegisterUserInput } from "../models/user/registerUserDto";
 import { LoginUserInput } from "../models/user/loginUserDto";
 import { findRoleByName } from "../repositories/RoleRepository";
-import {
-  createUser,
-  findByCitizenId,
-  findByUserId,
-} from "../repositories/UserRepository";
+import {createUser, findByCitizenId, findByUserId} from "../repositories/UserRepository"; // ใช้ repo ของ User
 import { signAccessToken, verifyAccessToken } from "../utils/jwt";
 
 export async function registerService(regisInput: RegisterUserInput) {

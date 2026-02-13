@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { requireAuth } from "../middlewares/AuthMiddleware";
+import {getAllUsersController} from "../controllers/UserController";
 
 const router = Router();
 
+// Get /user/all
+router.get("/all", getAllUsersController);
 
 export default router;
