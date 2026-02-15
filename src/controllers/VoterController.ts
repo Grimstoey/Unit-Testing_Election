@@ -3,7 +3,6 @@ import {
   getCandidatesService,
   createVoteService,
   updateVoteService,
-  checkCandidateInConstituencyService,
   getMyVoteService,
 } from '../services/VoterService'
 
@@ -25,32 +24,19 @@ export async function createVoteController(req: Request, res: Response) {
   const { constituency } = user?.data
   const { candidateId } = req.body
 
-  if (!candidateId) {
-    return res.status(400).json({
-      ok: false as const,
-      status: 400,
-      message: 'Missing candidateId',
-    })
-  }
-  const checkCandidateInConstituency =
-    await checkCandidateInConstituencyService(
-      Number(constituency.id),
-      Number(candidateId),
-    )
-
-  if (!checkCandidateInConstituency) {
-    return res.status(400).json({
-      ok: false as const,
-      status: 400,
-      message: 'Candidate not found in constituency',
-    })
-  }
-
   const result = await createVoteService({
     userId: Number(userId),
     constituencyId: Number(constituency.id),
     candidateId: Number(candidateId),
   })
+
+  if (!result) {
+    return res.status(400).json({
+      ok: false as const,
+      status: 400,
+      message: 'Failed to create vote',
+    })
+  }
 
   return res.status(200).json(result)
 }
@@ -61,32 +47,19 @@ export async function updateVoteController(req: Request, res: Response) {
   const { constituency } = user?.data
   const { candidateId } = req.body
 
-  if (!candidateId) {
-    return res.status(400).json({
-      ok: false as const,
-      status: 400,
-      message: 'Missing candidateId',
-    })
-  }
-  const checkCandidateInConstituency =
-    await checkCandidateInConstituencyService(
-      Number(constituency.id),
-      Number(candidateId),
-    )
-
-  if (!checkCandidateInConstituency) {
-    return res.status(400).json({
-      ok: false as const,
-      status: 400,
-      message: 'Candidate not found in constituency',
-    })
-  }
-
   const result = await updateVoteService({
     userId: Number(userId),
     constituencyId: Number(constituency.id),
     candidateId: Number(candidateId),
   })
+
+  if (!result) {
+    return res.status(400).json({
+      ok: false as const,
+      status: 400,
+      message: 'Failed to update vote',
+    })
+  }
 
   return res.status(200).json(result)
 }
