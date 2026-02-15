@@ -28,6 +28,25 @@ export const getCandidatesService = async (constituencyId: number) => {
   }
 }
 
+// ดึงข้อมูลเขตเลือกตั้ง (สำหรับตรวจสอบสถานะหีบ)
+export const getConstituencyService = async (constituencyId: number) => {
+  const result = await getConstituencyRepository(constituencyId)
+
+  if (!result) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'Constituency not found',
+    }
+  }
+
+  return {
+    ok: true as const,
+    status: 200,
+    data: result,
+  }
+}
+
 // ฟังก์ชันโหวต
 export const createVoteService = async (vote: VoteDto) => {
   const validationError = await validateVote(vote)

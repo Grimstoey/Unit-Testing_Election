@@ -4,6 +4,7 @@ import {
   createVoteService,
   updateVoteService,
   getMyVoteService,
+  getConstituencyService,
 } from '../services/VoterService'
 
 export async function getCandidatesController(req: Request, res: Response) {
@@ -14,6 +15,18 @@ export async function getCandidatesController(req: Request, res: Response) {
   }
 
   const result = await getCandidatesService(Number(constituency.id))
+
+  return res.status(200).json(result)
+}
+
+export async function getConstituencyController(req: Request, res: Response) {
+  const { user } = req.body
+  const { constituency } = user?.data
+  if (!constituency?.id) {
+    return res.status(400)
+  }
+
+  const result = await getConstituencyService(Number(constituency.id))
 
   return res.status(200).json(result)
 }
