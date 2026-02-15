@@ -16,15 +16,42 @@ export const getCandidatesRepository = async (constituencyId: number) => {
   return candidates
 }
 
+export const getCandidateInConstituencyRepository = async (
+  constituencyId: number,
+  candidateId: number,
+) => {
+  const candidate = await prisma.candidate.findFirst({
+    where: { constituencyId, id: candidateId },
+  })
+  return candidate
+}
+
 export const createVoteRepository = async (vote: VoteDto) => {
-  const result = await prisma.vote.create({ data: vote })
-  return result
+  try {
+    const result = await prisma.vote.create({ data: vote })
+    return result
+  } catch (error) {
+    console.log(error)
+    return null
+  }
 }
 
 export const updateVoteRepository = async (vote: VoteDto) => {
-  const result = await prisma.vote.update({
-    where: { userId: vote.userId },
-    data: vote,
+  try {
+    const result = await prisma.vote.update({
+      where: { userId: vote.userId },
+      data: vote,
+    })
+    return result
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+export const getMyVoteRepository = async (userId: number) => {
+  const result = await prisma.vote.findFirst({
+    where: { userId },
   })
   return result
 }

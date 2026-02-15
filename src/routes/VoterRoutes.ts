@@ -2,6 +2,7 @@ import {
   getCandidatesController,
   createVoteController,
   updateVoteController,
+  getMyVoteController,
 } from '@/controllers/VoterController'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { Router } from 'express'
@@ -9,7 +10,7 @@ import { Router } from 'express'
 const router = Router()
 
 router.get('/candidates', requireAuth, getCandidatesController)
-// router.get('/my-vote', getMyVoteController)
+router.get('/my-vote', requireAuth, getMyVoteController)
 router.post('/vote', requireAuth, createVoteController)
 router.put('/vote', requireAuth, updateVoteController)
 
