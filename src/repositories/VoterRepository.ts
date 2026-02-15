@@ -55,3 +55,10 @@ export const getMyVoteRepository = async (userId: number) => {
   })
   return result
 }
+
+export const getConstituencyRepository = async (constituencyId: number) => {
+  const result = await prisma.constituency.findFirst({
+    where: { id: constituencyId },
+  })
+  return result
+}
