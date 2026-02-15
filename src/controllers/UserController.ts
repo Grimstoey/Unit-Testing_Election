@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getAllUsersService, findByUserIdService, findByCitizenIdService } from "../services/UserService";
+import { getAllUsersService, findByUserIdService} from "../services/UserService";
 import {GetAllUsersQueryDto} from "../models/user/getAllUsersDto"
 
 
@@ -57,28 +57,3 @@ export async function getUserByIdController(req: Request, res: Response) {
 }
 
 
-export async function getUserByCitizenIdController(req: Request, res: Response) {
-  const citizenId = String(req.params.citizenId);
-
-  if (!citizenId || citizenId.length != 13) {
-    return res.status(400).json({
-      message: "Invalid citizenId",
-    });
-  }
-
-  const user = await findByCitizenIdService(citizenId);
-
-  if (!user) {
-    return res.status(404).json({
-      message: "User not found",
-    });
-  }
-
-  // กัน password หลุด
-  const { password, ...safeUser } = user;
-
-  return res.status(200).json({
-    message: "Get user by citizenId success",
-    user: safeUser,
-  });
-}
