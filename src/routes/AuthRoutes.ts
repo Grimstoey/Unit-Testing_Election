@@ -13,7 +13,7 @@ router.post("/register", registerController);
 router.post("/login", loginController);
 
 // GET /auth/me
-router.get("/me" , requireAuth ,meController)
+router.get("/me" , requireAuth ,meController);
 
 
 export default router;
