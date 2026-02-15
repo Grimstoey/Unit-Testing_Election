@@ -1,44 +1,6 @@
 import { GetAllUsersQueryDto } from '@/models/user/getAllUsersDto'
 import { prisma } from '../lib/prisma'
 
-// หา user จากเลขบัตรประชาชน
-export function findByCitizenId(citizenId: string) {
-  return prisma.user.findUnique({
-    where: { citizenId },
-    select: {
-      id: true,
-      citizenId: true,
-      password: true,
-      firstName: true,
-      lastName: true,
-      address: true,
-      createdAt: true,
-
-      province: true,
-      district: {
-        include: {
-          districtMappings: {
-            include: {
-              constituency: {
-                include: {
-                  province: true,
-                },
-              },
-            },
-          },
-        },
-      },
-
-      roles: {
-        select: {
-          role: {
-            select: { id: true, name: true },
-          },
-        },
-      },
-    },
-  })
-}
 
 // หา user จาก id
 export function findByUserId(userId: number) {
@@ -207,3 +169,4 @@ export async function getAllUsers(query: GetAllUsersQueryDto) {
     totalPages: Math.ceil(total / limit),
   }
 }
+
