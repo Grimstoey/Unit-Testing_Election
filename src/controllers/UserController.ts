@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { getAllUsersService, findByUserIdService} from "../services/UserService";
-import {GetAllUsersQueryDto} from "../models/user/getAllUsersDto"
+import {GetAllUsersQueryDto} from "../models/user/getAllUsersDto";
+import {getUserRolesService , addUserRoleService, removeUserRoleService} from "../services/RoleService";
 
 
 
@@ -9,8 +10,20 @@ export async function getAllUsersController(req: Request, res: Response) {
   const inputPage = req.query.page as string | undefined;
   const inputLimit = req.query.limit as string | undefined;
 
+
   const intPage = inputPage ? parseInt(inputPage, 10) : 1;
   const intLimit = inputLimit ? parseInt(inputLimit, 10) : 10;
+    /*
+    แปลง string เป็น number
+    parseInt(inputPage, 10) กำหนดเป็นฐาน 10 
+    ป้องกันปัญหาที่อาจเกิดจากการตีความเป็นฐานอื่นแบบอัตโนมัติ
+    ได้ค่าเป็น 64-bit floating point (IEEE 754 double-precision floating-point)
+    เลขทศนิยม 64 บิต ที่แม่นยำจริงแค่ 53 บิต
+    ค่าจะดูเป็น integer แต่จริง ๆ คือ floating-point 64-bit
+    ทุกอย่างคือ "number"
+    >= ES5 ไม่ต้องใส่ก็ได้ ให้ผลลัพธ์เหมือนกัน
+    ไม่ใส่ก็ได้ ใส่ก็ดี
+  */
 
   // ===== validate page =====
   if (Number.isNaN(intPage) || intPage < 1) {
@@ -98,5 +111,64 @@ export async function getUserByIdController(req: Request, res: Response) {
     user,
   });
 }
+
+export async function getUserRolesController(req: Request, res: Response) {
+  
+  const userId = parseInt(req.params.id as string);
+
+
+  if (isNaN(userId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid user id",
+    });
+  }
+
+  const result = await getUserRolesService(userId);
+
+  if (!result.success) {
+    return res.status(404).json(result);
+  }
+
+  return res.status(200).json(result);
+}
+
+
+
+export async function addUserRoleController(req: Request, res: Response) {
+  const adminUser = req.body.user;
+  const { userId, roleName } = req.body;
+
+  const result = await addUserRoleService(
+    adminUser,
+    Number(userId),
+    roleName
+  );
+
+  if (!result.success) {
+    return res.status(403).json(result);
+  }
+
+  return res.status(200).json(result);
+}
+
+
+export async function removeUserRoleController(req: Request, res: Response) {
+  const adminUser = req.body.user;
+  const { userId, roleName } = req.body;
+
+  const result = await removeUserRoleService(
+    adminUser,
+    Number(userId),
+    roleName
+  );
+
+  if (!result.success) {
+    return res.status(403).json(result);
+  }
+
+  return res.status(200).json(result);
+}
+
 
 

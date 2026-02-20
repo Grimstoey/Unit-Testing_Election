@@ -46,3 +46,5 @@ export async function findByUserIdService(userIdInput: number) {
 export async function getAllUsersService(query: GetAllUsersQueryDto): Promise<GetAllUsersResponseDto<UserWithRelationsDto>> {
   return getAllUsers(query);
 }
+
+
