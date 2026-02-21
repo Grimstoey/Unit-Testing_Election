@@ -5,7 +5,7 @@ import {
   getAllConstituencies,
   getAllEventsWithProvincePagination,
   getConstituencyById,
-} from "@/repositories/AdminRepository";
+} from "@/repositories/ConstituenciesRepository";
 
 export async function findAllConstituenciesService() {
   const result = await getAllConstituencies();

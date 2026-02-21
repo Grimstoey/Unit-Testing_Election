@@ -5,12 +5,15 @@ import {
   deleteConstituencyController,
   editConstituencyController,
   getAllConstituencyWithPaginationController,
-} from "@/controllers/AdminController";
-import {addUserRoleController, getAllUsersController, getUserRolesController, removeUserRoleController} from "../controllers/UserController";
+} from "@/controllers/ConstituencyController";
+import {
+  getAllUsersController,
+  getUserRolesController,
+  removeUserRoleController,
+} from "../controllers/UserController";
 import { requireRole } from "@/middlewares/RoleMiddleware";
 import { RoleName } from "@/models/role/roleNameDto";
-
-
+import { assignRoleController } from "@/controllers/UserRoleController";
 
 const router = Router();
 
@@ -33,13 +36,6 @@ router.get(
   getUserRolesController,
 );
 
-router.post(
-  "users/:id/roles",
-  requireAuth,
-  requireRole(RoleName.ADMIN),
-  addUserRoleController,
-);
-
 router.delete(
   "users/:id/roles",
   requireAuth,
@@ -47,6 +43,6 @@ router.delete(
   removeUserRoleController,
 );
 
-// ทำ post อัพเดต role --> PUT /users/:id/roles 
+router.post("/users/:userId/roles", assignRoleController);
 
 export default router;

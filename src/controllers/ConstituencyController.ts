@@ -4,7 +4,7 @@ import {
   editConstituencyService,
   findAllConstituenciesService,
   getAllConstituencyWithPagination,
-} from "@/services/AdminService";
+} from "@/services/ConstituencyService";
 import type { Request, Response } from "express";
 
 export async function findAllConstituenciesController(

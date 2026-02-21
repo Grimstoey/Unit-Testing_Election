@@ -6,7 +6,6 @@ import {
 import { GetAllUsersQueryDto } from "../models/user/getAllUsersDto";
 import {
   getUserRolesService,
-  addUserRoleService,
   removeUserRoleService,
 } from "../services/RoleService";
 import { RoleName } from "../models/role/roleNameDto";
@@ -94,27 +93,6 @@ export async function getUserRolesController(req: Request, res: Response) {
   }
 
   const result = await getUserRolesService(userId);
-
-  return res.status(result.statusCode).json(result);
-}
-
-// ======================================================
-// ADD ROLE
-// POST /users/:id/roles
-// ======================================================
-export async function addUserRoleController(req: Request, res: Response) {
-  const targetUserId = Number(req.params.id);
-  const { roleName } = req.body;
-
-  if (Number.isNaN(targetUserId)) {
-    return res.status(400).json({ message: "Invalid user id" });
-  }
-
-  if (!roleName) {
-    return res.status(400).json({ message: "roleName is required" });
-  }
-
-  const result = await addUserRoleService(targetUserId, roleName as RoleName);
 
   return res.status(result.statusCode).json(result);
 }

@@ -1,9 +1,16 @@
 import { prisma } from "../lib/prisma";
 
-// เพิ่ม role ให้ user
-export async function addRoleToUser(userId: number, roleId: number) {
-  return prisma.userRole.create({
-    data: {
+// กำหนด role ให้ user แบบ upsert
+export async function assignRoleToUser(userId: number, roleId: number) {
+  return prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId,
+        roleId,
+      },
+    },
+    update: {},
+    create: {
       userId,
       roleId,
     },
@@ -31,18 +38,14 @@ export async function deleteAllRolesByUserId(userId: number) {
 
 // ดึง role ทั้งหมดของ user
 export async function findUserRolesByUserId(userId: number) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const user = await prisma.userRole.findMany({
+    where: { userId },
     include: {
-      roles: {
-        include: {
-          role: true,
-        },
-      },
+      role: true,
     },
   });
 
   if (!user) return null;
 
-  return user.roles.map((r) => r.role.name);
+  return user;
 }
