@@ -34,7 +34,8 @@ export async function getAllUsersController(req: Request, res: Response) {
     const usersQueryDto: GetAllUsersQueryDto = {
       page: intPage,
       limit: intLimit,
-      search: typeof req.query.search === "string" ? req.query.search : undefined,
+      search:
+        typeof req.query.search === "string" ? req.query.search : undefined,
       sortBy: (req.query.sortBy as any) || "id",
       order: (req.query.order as any) || "desc",
     };
@@ -83,6 +84,7 @@ export async function getUserByIdController(req: Request, res: Response) {
 // GET USER ROLES
 // ======================================================
 export async function getUserRolesController(req: Request, res: Response) {
+  console.log(req);
   const userId = Number(req.params.id);
 
   if (Number.isNaN(userId)) {
@@ -100,10 +102,7 @@ export async function getUserRolesController(req: Request, res: Response) {
 // ADD ROLE
 // POST /users/:id/roles
 // ======================================================
-export async function addUserRoleController(
-  req: Request,
-  res: Response
-) {
+export async function addUserRoleController(req: Request, res: Response) {
   const targetUserId = Number(req.params.id);
   const { roleName } = req.body;
 
@@ -115,10 +114,7 @@ export async function addUserRoleController(
     return res.status(400).json({ message: "roleName is required" });
   }
 
-  const result = await addUserRoleService(
-    targetUserId,
-    roleName as RoleName
-  );
+  const result = await addUserRoleService(targetUserId, roleName as RoleName);
 
   return res.status(result.statusCode).json(result);
 }
@@ -127,10 +123,7 @@ export async function addUserRoleController(
 // REMOVE ROLE
 // DELETE /users/:id/roles
 // ======================================================
-export async function removeUserRoleController(
-  req: Request,
-  res: Response
-) {
+export async function removeUserRoleController(req: Request, res: Response) {
   const targetUserId = Number(req.params.id);
   const { roleName } = req.body;
 
@@ -144,7 +137,7 @@ export async function removeUserRoleController(
 
   const result = await removeUserRoleService(
     targetUserId,
-    roleName as RoleName
+    roleName as RoleName,
   );
 
   return res.status(result.statusCode).json(result);

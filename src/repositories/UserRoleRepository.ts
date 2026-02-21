@@ -11,7 +11,7 @@ export async function addRoleToUser(userId: number, roleId: number) {
 }
 
 // ลบ role ที่เลือก
-export async function removeRoleFromUser(userId: number, roleId: number) {
+export async function deleteRoleFromUser(userId: number, roleId: number) {
   return prisma.userRole.delete({
     where: {
       userId_roleId: {
@@ -29,7 +29,7 @@ export async function deleteAllRolesByUserId(userId: number) {
   });
 }
 
-// ดึง role ทั้งหมดของ user 
+// ดึง role ทั้งหมดของ user
 export async function findUserRolesByUserId(userId: number) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

@@ -33,7 +33,6 @@ app.get('/', (req: Request, res: Response) =>
 app.use('/auth', authRoutes)
 app.use('/admin', adminRoutes)
 app.use('/location', locationRoutes)
-app.use('/users', userRoutes)
 app.use('/voter', voterRoutes)
 
 // เอาไว้อันท้ายสุดหลังจากทุกอย่างไหลมาแล้ว ห้ามย้าย!!!!

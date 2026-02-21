@@ -3,12 +3,9 @@ import {
   deleteConstituencyService,
   editConstituencyService,
   findAllConstituenciesService,
-  findAllUserService,
-  findConstituencyById,
   getAllConstituencyWithPagination,
 } from "@/services/AdminService";
 import type { Request, Response } from "express";
-import { getAllEventsWithProvincePagination } from "@/repositories/AdminRepository";
 
 export async function findAllConstituenciesController(
   req: Request,
@@ -22,15 +19,7 @@ export async function findAllConstituenciesController(
 
   return res.status(200).json(result.data);
 }
-export async function findAllUserController(req: Request, res: Response) {
-  const result = await findAllUserService();
 
-  if (!result.ok) {
-    return res.status(result.status).json({ message: result.message });
-  }
-
-  return res.status(200).json(result.data);
-}
 export async function createConstituencyController(
   req: Request,
   res: Response,
@@ -39,13 +28,11 @@ export async function createConstituencyController(
   const result = await createConstituencyService(number, provinceId);
 
   if (!result) {
-    return res
-      .status(400)
-      .json({
-        ok: false as const,
-        status: 400,
-        message: "Create constituency failed",
-      });
+    return res.status(400).json({
+      ok: false as const,
+      status: 400,
+      message: "Create constituency failed",
+    });
   }
 
   return res.status(200).json(result);
@@ -61,13 +48,11 @@ export async function deleteConstituencyController(
   const result = await deleteConstituencyService(Number(id));
 
   if (!result) {
-    return res
-      .status(400)
-      .json({
-        ok: false as const,
-        status: 400,
-        message: "Create constituency failed",
-      });
+    return res.status(400).json({
+      ok: false as const,
+      status: 400,
+      message: "Create constituency failed",
+    });
   }
 
   return res.status(200).json(result);
@@ -85,13 +70,11 @@ export async function editConstituencyController(req: Request, res: Response) {
   );
 
   if (!result) {
-    return res
-      .status(400)
-      .json({
-        ok: false as const,
-        status: 400,
-        message: "Create constituency failed",
-      });
+    return res.status(400).json({
+      ok: false as const,
+      status: 400,
+      message: "Create constituency failed",
+    });
   }
 
   return res.status(200).json(result);
