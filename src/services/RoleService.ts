@@ -2,47 +2,40 @@ import {
   findUserRolesByUserId,
   addRoleToUser,
   removeRoleFromUser,
-  findRoleByName,
-} from "../repositories/RoleRepository";
+} from "../repositories/UserRoleRepository";
+import { findRoleByName } from "../repositories/RoleRepository";
+import { UserRole } from "../models/role/userRoleDto";
+import { RoleName } from "../models/role/roleNameDto";
 
-// เรียกดู role ของ user
+// ดู role ของ user
 export async function getUserRolesService(userId: number) {
-  const user = await findUserRolesByUserId(userId);
+  const userRoles = await findUserRolesByUserId(userId);
 
-  if (!user) {
+  if (!userRoles) {
     return {
       success: false,
+      statusCode: 404,
       message: "User not found",
     };
   }
 
-  if (user.roles.length === 0) {
-    return {
-      success: true,
-      message: "User has no roles",
-      roles: [],
-    };
-  }
-
-  const userRoleNames = user.roles.map((userRole) => userRole.role.name);
-
   return {
     success: true,
-    roles: userRoleNames,
+    statusCode: 200,
+    roles: userRoles,
   };
 }
 
-// เพิ่ม role ของ user
+// เพิ่ม role ให้ user
 export async function addUserRoleService(
-  adminUser: any,
   targetUserId: number,
-  roleName: string,
+  roleName: RoleName,
 ) {
-  // เช็คว่าเป็น ADMIN ไหม
-  if (!adminUser.roles.includes("ROLE_ADMIN")) {
+  if (roleName === RoleName.VOTER) {
     return {
       success: false,
-      message: "Only ADMIN can add roles",
+      statusCode: 400,
+      message: "ROLE_VOTER is default and cannot be manually added",
     };
   }
 
@@ -51,6 +44,7 @@ export async function addUserRoleService(
   if (!role) {
     return {
       success: false,
+      statusCode: 404,
       message: "Role not found",
     };
   }
@@ -59,20 +53,21 @@ export async function addUserRoleService(
 
   return {
     success: true,
+    statusCode: 200,
     message: "Role added successfully",
   };
 }
 
+// ลบ role ของ user
 export async function removeUserRoleService(
-  adminUser: any,
   targetUserId: number,
-  roleName: string,
+  roleName: RoleName,
 ) {
-  // เช็คว่าเป็น ADMIN ไหม
-  if (!adminUser.roles.includes("ROLE_ADMIN")) {
+  if (roleName === RoleName.VOTER) {
     return {
       success: false,
-      message: "Only ADMIN can remove roles",
+      statusCode: 400,
+      message: "ROLE_VOTER cannot be removed",
     };
   }
 
@@ -81,6 +76,7 @@ export async function removeUserRoleService(
   if (!role) {
     return {
       success: false,
+      statusCode: 404,
       message: "Role not found",
     };
   }
@@ -89,6 +85,7 @@ export async function removeUserRoleService(
 
   return {
     success: true,
+    statusCode: 200,
     message: "Role removed successfully",
   };
 }

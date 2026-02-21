@@ -1,19 +1,14 @@
-import type { Response, NextFunction } from "express";
-import type { AuthenticatedRequest } from "./AuthMiddleware";
+import { Response, NextFunction } from "express";
+import { AuthenticatedRequest } from "./AuthMiddleware";
 
-export function requireRole(...roles: string[]) {
-    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-        if (!req.auth) {
-            return res.status(401).json({ message: "Unauthenticated" });
-        }
+export function requireRole(role: string) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.auth?.roles.includes(role)) {
+      return res.status(403).json({
+        message: "Forbidden: insufficient permissions",
+      });
+    }
 
-        const userRoles = req.auth.roles || [];
-        const ok = roles.some((r) => userRoles.includes(r));
-
-        if (!ok) {
-            return res.status(403).json({ message: "Forbidden: insufficient role" });
-        }
-
-        return next();
-    };
+    return next();
+  };
 }
