@@ -6,8 +6,8 @@ import authRoutes from './routes/AuthRoutes'
 import locationRoutes from './routes/LocationRoutes'
 import userRoutes from './routes/UserRoutes'
 import voterRoutes from './routes/VoterRoutes'
-import partyRoutes from "@/routes/PartyRoutes";
-import {errorHandler} from "./middlewares/PrismaErrorHandler";
+import partyRoutes from '@/routes/ECRoutes'
+import { errorHandler } from './middlewares/PrismaErrorHandler'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -29,16 +29,17 @@ app.get('/', (req: Request, res: Response) =>
   res.json({ message: 'Welcome to Election Backend API' }),
 )
 
-
 // routes
 app.use('/auth', authRoutes)
+
 app.use('/admin', adminRoutes)
+app.use('/ec', partyRoutes)
+
 app.use('/location', locationRoutes)
-app.use('/users', userRoutes)
+
 app.use('/voter', voterRoutes)
-app.use('/parties', partyRoutes);
 
 // เอาไว้อันท้ายสุดหลังจากทุกอย่างไหลมาแล้ว ห้ามย้าย!!!!
-app.use(errorHandler);
+app.use(errorHandler)
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))
