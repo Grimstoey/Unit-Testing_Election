@@ -9,18 +9,15 @@ import {
   addUserRoleService,
   removeUserRoleService,
 } from "../services/RoleService";
-import {UserRole} from "../models/role/userRoleDto";
+import { RoleName } from "../models/role/roleNameDto";
 
 // ======================================================
 // GET ALL USERS
 // ======================================================
 export async function getAllUsersController(req: Request, res: Response) {
   try {
-    const inputPage = req.query.page as string | undefined;
-    const inputLimit = req.query.limit as string | undefined;
-
-    const intPage = inputPage ? parseInt(inputPage) : 1;
-    const intLimit = inputLimit ? parseInt(inputLimit) : 10;
+    const intPage = req.query.page ? parseInt(req.query.page as string) : 1;
+    const intLimit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
     if (Number.isNaN(intPage) || intPage < 1) {
       return res.status(400).json({
@@ -34,29 +31,12 @@ export async function getAllUsersController(req: Request, res: Response) {
       });
     }
 
-    const inputSearch =
-      typeof req.query.search === "string"
-        ? req.query.search
-        : undefined;
-
-    const allowedSortBy = ["id", "createdAt", "firstName", "lastName"] as const;
-    const sortBy =
-      typeof req.query.sortBy === "string" &&
-      allowedSortBy.includes(req.query.sortBy as any)
-        ? req.query.sortBy
-        : "id";
-
-    const order =
-      req.query.order === "asc" || req.query.order === "desc"
-        ? req.query.order
-        : "desc";
-
     const usersQueryDto: GetAllUsersQueryDto = {
       page: intPage,
       limit: intLimit,
-      search: inputSearch,
-      sortBy: sortBy as any,
-      order: order as any,
+      search: typeof req.query.search === "string" ? req.query.search : undefined,
+      sortBy: (req.query.sortBy as any) || "id",
+      order: (req.query.order as any) || "desc",
     };
 
     const result = await getAllUsersService(usersQueryDto);
@@ -120,14 +100,12 @@ export async function getUserRolesController(req: Request, res: Response) {
 // ADD ROLE
 // POST /users/:id/roles
 // ======================================================
-export async function addUserRoleController(req: Request, res: Response) {
-  const adminUser = req.body.user as UserRole;
+export async function addUserRoleController(
+  req: Request,
+  res: Response
+) {
   const targetUserId = Number(req.params.id);
   const { roleName } = req.body;
-
-  if (!adminUser) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
 
   if (Number.isNaN(targetUserId)) {
     return res.status(400).json({ message: "Invalid user id" });
@@ -138,9 +116,8 @@ export async function addUserRoleController(req: Request, res: Response) {
   }
 
   const result = await addUserRoleService(
-    adminUser,
     targetUserId,
-    roleName
+    roleName as RoleName
   );
 
   return res.status(result.statusCode).json(result);
@@ -150,14 +127,12 @@ export async function addUserRoleController(req: Request, res: Response) {
 // REMOVE ROLE
 // DELETE /users/:id/roles
 // ======================================================
-export async function removeUserRoleController(req: Request, res: Response) {
-  const adminUser = req.body.user as UserRole;
+export async function removeUserRoleController(
+  req: Request,
+  res: Response
+) {
   const targetUserId = Number(req.params.id);
   const { roleName } = req.body;
-
-  if (!adminUser) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
 
   if (Number.isNaN(targetUserId)) {
     return res.status(400).json({ message: "Invalid user id" });
@@ -168,9 +143,8 @@ export async function removeUserRoleController(req: Request, res: Response) {
   }
 
   const result = await removeUserRoleService(
-    adminUser,
     targetUserId,
-    roleName
+    roleName as RoleName
   );
 
   return res.status(result.statusCode).json(result);

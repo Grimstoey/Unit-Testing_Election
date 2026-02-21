@@ -10,6 +10,7 @@ import {
 } from "../controllers/UserController";
 import { requireAuth } from "../middlewares/AuthMiddleware";
 import { requireRole } from "../middlewares/RoleMiddleware";
+import { RoleName } from "@/models/role/roleNameDto";
 
 const router = Router();
 
@@ -22,21 +23,21 @@ router.get("/:id/roles", getUserRolesController);
 router.get(
   "/users/:id/roles",
   requireAuth,
-  requireRole("ROLE_ADMIN"),
+  requireRole(RoleName.ADMIN),
   getUserRolesController,
 );
 
 router.post(
   "/users/:id/roles",
   requireAuth,
-  requireRole("ROLE_ADMIN"),
+  requireRole(RoleName.ADMIN),
   addUserRoleController,
 );
 
 router.delete(
   "/users/:id/roles",
   requireAuth,
-  requireRole("ROLE_ADMIN"),
+  requireRole(RoleName.ADMIN),
   removeUserRoleController,
 );
 
