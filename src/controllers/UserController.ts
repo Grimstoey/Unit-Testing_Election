@@ -1,98 +1,65 @@
 import type { Request, Response } from "express";
-import { getAllUsersService, findByUserIdService} from "../services/UserService";
-import {GetAllUsersQueryDto} from "../models/user/getAllUsersDto";
-import {getUserRolesService , addUserRoleService, removeUserRoleService} from "../services/RoleService";
+import {
+  getAllUsersService,
+  findByUserIdService,
+} from "../services/UserService";
+import { GetAllUsersQueryDto } from "../models/user/getAllUsersDto";
+import {
+  getUserRolesService,
+  removeUserRoleService,
+} from "../services/RoleService";
+import { RoleName } from "../models/role/roleNameDto";
 
-
-
-// type GetAllUsersQueryDto เข้า req
+// ======================================================
+// GET ALL USERS
+// ======================================================
 export async function getAllUsersController(req: Request, res: Response) {
-  const inputPage = req.query.page as string | undefined;
-  const inputLimit = req.query.limit as string | undefined;
+  try {
+    const intPage = req.query.page ? parseInt(req.query.page as string) : 1;
+    const intLimit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
-
-  const intPage = inputPage ? parseInt(inputPage, 10) : 1;
-  const intLimit = inputLimit ? parseInt(inputLimit, 10) : 10;
-    /*
-    แปลง string เป็น number
-    parseInt(inputPage, 10) กำหนดเป็นฐาน 10 
-    ป้องกันปัญหาที่อาจเกิดจากการตีความเป็นฐานอื่นแบบอัตโนมัติ
-    ได้ค่าเป็น 64-bit floating point (IEEE 754 double-precision floating-point)
-    เลขทศนิยม 64 บิต ที่แม่นยำจริงแค่ 53 บิต
-    ค่าจะดูเป็น integer แต่จริง ๆ คือ floating-point 64-bit
-    ทุกอย่างคือ "number"
-    >= ES5 ไม่ต้องใส่ก็ได้ ให้ผลลัพธ์เหมือนกัน
-    ไม่ใส่ก็ได้ ใส่ก็ดี
-  */
-
-  // ===== validate page =====
-  if (Number.isNaN(intPage) || intPage < 1) {
-    return res.status(400).json({
-      message: "Invalid page. page must be an integer >= 1",
-    });
-  }
-
-  // ===== validate limit =====
-  if (Number.isNaN(intLimit) || intLimit < 1) {
-    return res.status(400).json({
-      message: "Invalid limit. limit must be an integer >= 1",
-    });
-  }
-
-  // ===== validate search =====
-  const inputSearch = (req.query.search as string) || undefined;
-  if (inputSearch && typeof inputSearch !== "string") {
-    return res.status(400).json({
-      message: "Invalid search. search must be a string",
-    });
-  }
-
-  // ===== validate sortBy =====
-  const allowedSortBy = ["id", "createdAt", "firstName", "lastName"] as const;
-  const sortBy = (req.query.sortBy as string) || "id";
-
-  if (!allowedSortBy.includes(sortBy as any)) {
-    return res.status(400).json({
-      message: `Invalid sortBy. sortBy must be one of: ${allowedSortBy.join(", ")}`,
-    });
-  }
-
-  // ===== validate order =====
-  const order = ((req.query.order as string) || "desc").toLowerCase();
-  if (order !== "asc" && order !== "desc") {
-    return res.status(400).json({
-      message: "Invalid order. order must be 'asc' or 'desc'",
-    });
-  }
-
-  // ===== build dto =====
-  const usersQueryDto: GetAllUsersQueryDto = {
-    page: intPage,
-    limit: intLimit,
-    search: inputSearch,
-    sortBy: sortBy as any,
-    order: order as any,
-  };
-
-  // getAllUsersService เป็น Promise
-  return getAllUsersService(usersQueryDto).then(
-    (result) => {
-      return res.status(200).json({message: "Get all users success", ...result,});
+    if (Number.isNaN(intPage) || intPage < 1) {
+      return res.status(400).json({
+        message: "Invalid page. page must be >= 1",
+      });
     }
-  ).catch((error) => 
-  {
-    console.error("getAllUsersController error:", error);
 
-    return res.status(500).json({message: "There was an error retrieving the data."});
-  });
-  
+    if (Number.isNaN(intLimit) || intLimit < 1) {
+      return res.status(400).json({
+        message: "Invalid limit. limit must be >= 1",
+      });
+    }
+
+    const usersQueryDto: GetAllUsersQueryDto = {
+      page: intPage,
+      limit: intLimit,
+      search:
+        typeof req.query.search === "string" ? req.query.search : undefined,
+      sortBy: (req.query.sortBy as any) || "id",
+      order: (req.query.order as any) || "desc",
+    };
+
+    const result = await getAllUsersService(usersQueryDto);
+
+    return res.status(200).json({
+      message: "Get all users success",
+      ...result,
+    });
+  } catch (error) {
+    console.error("getAllUsersController error:", error);
+    return res.status(500).json({
+      message: "There was an error retrieving the data.",
+    });
+  }
 }
 
-
+// ======================================================
+// GET USER BY ID
+// ======================================================
 export async function getUserByIdController(req: Request, res: Response) {
   const userId = Number(req.params.id);
 
-  if (!userId || Number.isNaN(userId)) {
+  if (Number.isNaN(userId)) {
     return res.status(400).json({
       message: "Invalid user id",
     });
@@ -112,63 +79,44 @@ export async function getUserByIdController(req: Request, res: Response) {
   });
 }
 
+// ======================================================
+// GET USER ROLES
+// ======================================================
 export async function getUserRolesController(req: Request, res: Response) {
-  
-  const userId = parseInt(req.params.id as string);
+  console.log(req);
+  const userId = Number(req.params.id);
 
-
-  if (isNaN(userId)) {
+  if (Number.isNaN(userId)) {
     return res.status(400).json({
-      success: false,
       message: "Invalid user id",
     });
   }
 
   const result = await getUserRolesService(userId);
 
-  if (!result.success) {
-    return res.status(404).json(result);
-  }
-
-  return res.status(200).json(result);
+  return res.status(result.statusCode).json(result);
 }
 
-
-
-export async function addUserRoleController(req: Request, res: Response) {
-  const adminUser = req.body.user;
-  const { userId, roleName } = req.body;
-
-  const result = await addUserRoleService(
-    adminUser,
-    Number(userId),
-    roleName
-  );
-
-  if (!result.success) {
-    return res.status(403).json(result);
-  }
-
-  return res.status(200).json(result);
-}
-
-
+// ======================================================
+// REMOVE ROLE
+// DELETE /users/:id/roles
+// ======================================================
 export async function removeUserRoleController(req: Request, res: Response) {
-  const adminUser = req.body.user;
-  const { userId, roleName } = req.body;
+  const targetUserId = Number(req.params.id);
+  const { roleName } = req.body;
+
+  if (Number.isNaN(targetUserId)) {
+    return res.status(400).json({ message: "Invalid user id" });
+  }
+
+  if (!roleName) {
+    return res.status(400).json({ message: "roleName is required" });
+  }
 
   const result = await removeUserRoleService(
-    adminUser,
-    Number(userId),
-    roleName
+    targetUserId,
+    roleName as RoleName,
   );
 
-  if (!result.success) {
-    return res.status(403).json(result);
-  }
-
-  return res.status(200).json(result);
+  return res.status(result.statusCode).json(result);
 }
-
-
-

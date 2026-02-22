@@ -1,78 +1,143 @@
 import {
   findUserRolesByUserId,
-  addRoleToUser,
-  removeRoleFromUser,
-  findRoleByName,
-} from "../repositories/RoleRepository";
+  deleteRoleFromUser,
+  assignRoleToUser,
+} from "../repositories/UserRoleRepository";
+import { findRoleByName } from "../repositories/RoleRepository";
+import { RoleName } from "../models/role/roleNameDto";
+import { prisma } from "../lib/prisma";
 
-// เรียกดู role ของ user
+// ดู role ของ user
 export async function getUserRolesService(userId: number) {
-  const user = await findUserRolesByUserId(userId);
+  const userRoles = await findUserRolesByUserId(userId);
 
-  if (!user) {
+  if (!userRoles) {
     return {
       success: false,
+      statusCode: 404,
       message: "User not found",
     };
   }
 
-  if (user.roles.length === 0) {
-    return {
-      success: true,
-      message: "User has no roles",
-      roles: [],
-    };
-  }
-
-  const userRoleNames = user.roles.map((userRole) => userRole.role.name);
-
   return {
     success: true,
-    roles: userRoleNames,
+    statusCode: 200,
+    roles: userRoles,
   };
 }
 
-// เพิ่ม role ของ user
-export async function addUserRoleService(
-  adminUser: any,
-  targetUserId: number,
-  roleName: string,
+export async function assignRoleWithValidationService(
+  userId: number,
+  roleId: number,
+  roleName: RoleName,
 ) {
-  // เช็คว่าเป็น ADMIN ไหม
-  if (!adminUser.roles.includes("ROLE_ADMIN")) {
-    return {
-      success: false,
-      message: "Only ADMIN can add roles",
-    };
+  const existingRoles = await findUserRolesByUserId(userId);
+
+  if (!existingRoles) {
+    throw new Error("User not found");
   }
 
-  const role = await findRoleByName(roleName);
+  const hasAdmin = existingRoles.find((r) => r.role.name === RoleName.ADMIN);
+  const hasEC = existingRoles.find((r) => r.role.name === RoleName.EC);
 
-  if (!role) {
-    return {
-      success: false,
-      message: "Role not found",
-    };
+  const adminRole = await findRoleByName(RoleName.ADMIN);
+  const ecRole = await findRoleByName(RoleName.EC);
+
+  const adminId = adminRole?.id;
+  const ecId = ecRole?.id;
+
+  if (roleName === RoleName.VOTER) {
+    if (hasAdmin && adminId) {
+      deleteRoleFromUser(userId, adminId);
+    }
+    if (hasEC) {
+      if (hasEC && ecId) deleteRoleFromUser(userId, ecId);
+    }
+  } else {
+    const currentRole = hasAdmin ? hasAdmin?.roleId : hasEC?.roleId;
+
+    if (!currentRole) {
+      return assignRoleToUser(userId, roleId);
+    }
+
+    await prisma.userRole.update({
+      where: {
+        userId_roleId: {
+          userId,
+          roleId: currentRole,
+        },
+      },
+      data: {
+        roleId,
+      },
+    });
   }
 
-  await addRoleToUser(targetUserId, role.id);
+  // ใช้ transaction เพื่อความปลอดภัย
+  // await prisma.$transaction(async (tx) => {
+  //   // ถ้าจะให้ ADMIN แต่มี EC อยู่ → ลบ EC ก่อน
+  //   if (roleName === RoleName.ADMIN && hasEC) {
+  //     const ecRole = await findRoleByName(RoleName.EC);
+  //     if (ecRole) {
+  //       await tx.userRole.delete({
+  //         where: {
+  //           userId_roleId: {
+  //             userId,
+  //             roleId: ecRole.id,
+  //           },
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   // ถ้าจะให้ EC แต่มี ADMIN อยู่ → ลบ ADMIN ก่อน
+  //   if (roleName === RoleName.EC && hasAdmin) {
+  //     const adminRole = await findRoleByName(RoleName.ADMIN);
+  //     if (adminRole) {
+  //       await tx.userRole.delete({
+  //         where: {
+  //           userId_roleId: {
+  //             userId,
+  //             roleId: adminRole.id,
+  //           },
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   // เพิ่ม role ใหม่ (กันซ้ำด้วย upsert)
+  //   await tx.userRole.upsert({
+  //     where: {
+  //       userId_roleId: {
+  //         userId,
+  //         roleId,
+  //       },
+  //     },
+  //     update: {},
+  //     create: {
+  //       userId,
+  //       roleId,
+  //     },
+  //   });
+  // });
 
   return {
     success: true,
-    message: "Role added successfully",
+    statusCode: 200,
+    message: "Role assigned (auto-switched if needed)",
   };
 }
 
+// ลบ role ของ user
 export async function removeUserRoleService(
-  adminUser: any,
   targetUserId: number,
-  roleName: string,
+  roleName: RoleName,
 ) {
-  // เช็คว่าเป็น ADMIN ไหม
-  if (!adminUser.roles.includes("ROLE_ADMIN")) {
+  if (roleName === RoleName.VOTER) {
     return {
       success: false,
-      message: "Only ADMIN can remove roles",
+      statusCode: 400,
+      message: "ROLE_VOTER cannot be removed",
     };
   }
 
@@ -81,14 +146,16 @@ export async function removeUserRoleService(
   if (!role) {
     return {
       success: false,
+      statusCode: 404,
       message: "Role not found",
     };
   }
 
-  await removeRoleFromUser(targetUserId, role.id);
+  await deleteRoleFromUser(targetUserId, role.id);
 
   return {
     success: true,
+    statusCode: 200,
     message: "Role removed successfully",
   };
 }
