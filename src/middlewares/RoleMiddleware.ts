@@ -1,14 +1,14 @@
-import { Response, NextFunction } from "express";
-import { AuthenticatedRequest } from "./AuthMiddleware";
+import { Response, NextFunction, Request } from 'express'
 
 export function requireRole(role: string) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.auth?.roles.includes(role)) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body.user)
+    if (!req.body.user.roles.includes(role)) {
       return res.status(403).json({
-        message: "Forbidden: insufficient permissions",
-      });
+        message: 'Forbidden: insufficient permissions',
+      })
     }
 
-    return next();
-  };
+    return next()
+  }
 }
