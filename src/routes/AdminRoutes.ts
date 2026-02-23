@@ -51,7 +51,7 @@ router.get(
 )
 
 router.get(
-  'users/:id/roles',
+  '/users/:id/roles',
   requireAuth,
   requireRole(RoleName.ADMIN),
   getUserRolesController,
