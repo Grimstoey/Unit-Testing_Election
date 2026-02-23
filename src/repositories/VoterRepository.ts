@@ -20,6 +20,10 @@ export const getCandidateInConstituencyRepository = async (
   constituencyId: number,
   candidateId: number,
 ) => {
+  if (!constituencyId || !candidateId) {
+    console.log('Missing constituencyId or candidateId')
+    return null
+  }
   const candidate = await prisma.candidate.findFirst({
     where: { constituencyId, id: candidateId },
   })

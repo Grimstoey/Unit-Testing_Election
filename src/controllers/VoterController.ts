@@ -9,7 +9,7 @@ import {
 
 export async function getCandidatesController(req: Request, res: Response) {
   const { user } = req.body
-  const { constituency } = user?.data
+  const { constituency } = user
   if (!constituency?.id) {
     return res.status(400)
   }
@@ -21,7 +21,7 @@ export async function getCandidatesController(req: Request, res: Response) {
 
 export async function getConstituencyController(req: Request, res: Response) {
   const { user } = req.body
-  const { constituency } = user?.data
+  const { constituency } = user
   if (!constituency?.id) {
     return res.status(400)
   }
@@ -33,8 +33,8 @@ export async function getConstituencyController(req: Request, res: Response) {
 
 export async function createVoteController(req: Request, res: Response) {
   const { user } = req.body
-  const userId = user?.data?.id
-  const { constituency } = user?.data
+  const userId = user?.id
+  const { constituency } = user
   const { candidateId } = req.body
 
   const result = await createVoteService({
@@ -56,8 +56,8 @@ export async function createVoteController(req: Request, res: Response) {
 
 export async function updateVoteController(req: Request, res: Response) {
   const { user } = req.body
-  const userId = user?.data?.id
-  const { constituency } = user?.data
+  const userId = user?.id
+  const { constituency } = user
   const { candidateId } = req.body
 
   const result = await updateVoteService({
@@ -79,7 +79,7 @@ export async function updateVoteController(req: Request, res: Response) {
 
 export async function getMyVoteController(req: Request, res: Response) {
   const { user } = req.body
-  const userId = user?.data?.id
+  const userId = user?.id
   const result = await getMyVoteService(Number(userId))
   return res.status(200).json(result)
 }
