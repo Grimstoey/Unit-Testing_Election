@@ -5,6 +5,7 @@ import { findRoleByName } from "../repositories/RoleRepository";
 import { createUser, findByCitizenId } from "../repositories/UserRepository";
 import { signAccessToken, verifyAccessToken } from "../utils/jwt";
 import { findByUserIdService } from "./UserService";
+import { RoleName } from "@/models/role/roleNameDto";
 
 export async function registerService(regisInput: RegisterUserInput) {
   const {
@@ -28,7 +29,7 @@ export async function registerService(regisInput: RegisterUserInput) {
   }
 
   // default role = ROLE_VOTER
-  const role = await findRoleByName("ROLE_VOTER");
+  const role = await findRoleByName(RoleName.VOTER);
   if (!role) {
     return {
       ok: false as const,

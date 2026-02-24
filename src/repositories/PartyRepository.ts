@@ -67,3 +67,16 @@ export async function getAllPartyWithPagination(limit: number, page: number) {
     totalPages: Math.ceil(total / limit),
   }
 }
+
+// หาพรรคจาก id
+// เอาไปตรวจสอบ input ใน CandidateService.ts
+export async function findPartyById(partyId: number) {
+  return prisma.party.findUnique({
+    where: { id: partyId },
+    select: {
+      id: true,
+      name: true,
+      policy: true
+    }
+  });
+}

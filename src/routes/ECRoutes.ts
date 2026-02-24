@@ -9,6 +9,7 @@ import { Router } from 'express'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { requireRole } from '@/middlewares/RoleMiddleware'
 import { RoleName } from '@/models/role/roleNameDto'
+import { getAllCandidatesController, upsertCandidateController } from "../controllers/CandidateController";
 
 const router = Router()
 
@@ -43,5 +44,16 @@ router.put(
   requireRole(RoleName.EC),
   editPartyController,
 )
+
+//==================================
+//            Candidate
+//==================================
+router.get(
+  '/candidates',
+  requireAuth,
+  requireRole(RoleName.EC),
+  getAllCandidatesController,
+)
+
 
 export default router
