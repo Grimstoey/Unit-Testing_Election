@@ -9,7 +9,7 @@ import { Router } from 'express'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { requireRole } from '@/middlewares/RoleMiddleware'
 import { RoleName } from '@/models/role/roleNameDto'
-import { getAllCandidatesController, upsertCandidateController } from "../controllers/CandidateController";
+import { getAllCandidatesController, createCandidateController, updateCandidateController, deleteCandidateController } from "../controllers/CandidateController";
 
 const router = Router()
 
@@ -53,7 +53,30 @@ router.get(
   requireAuth,
   requireRole(RoleName.EC),
   getAllCandidatesController,
-)
+);
+
+router.post(
+  '/candidates',
+  requireAuth,
+  requireRole(RoleName.EC),
+  createCandidateController,
+);
+
+router.patch(
+  "/candidates/:id",
+  requireAuth,
+  requireRole(RoleName.EC),
+  updateCandidateController
+);
+
+router.delete(
+  "/candidates/:id",
+  requireAuth,
+  requireRole(RoleName.EC),
+  deleteCandidateController
+);
+
+
 
 
 export default router

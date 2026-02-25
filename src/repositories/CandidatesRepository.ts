@@ -1,35 +1,32 @@
 import { CreateCandidateDto } from "@/models/candidate/createCandidateDto";
 import { prisma } from "../lib/prisma";
+import { UpdateCandidateDto } from "@/models/candidate/updateCandidateDto";
 
-
-//สร้างผู้สมัครแบบ upsert
-// upsert ใช้ได้เฉพาะ id หรือ unique constraint เท่านั้น
-// where ใน upsert ต้องเป็น unique เท่านั้น
-export async function upsertCandidateRepository(input: CreateCandidateDto) {
-    return prisma.candidate.upsert({
-        where: {
-            number_constituencyId: {
+// สร้างผู้สมัคร
+export async function createCandidateRepository(input: CreateCandidateDto) {
+    return await prisma.candidate.create(
+        {
+            data: {
                 number: input.number,
-                constituencyId: input.constituencyId,
-            },
-        },
-        update: {
-            firstName: input.firstName,
-            lastName: input.lastName,
-            candidatePolicy: input.candidatePolicy,
-            imageUrl: input.imageUrl,
-            partyId: input.partyId,
-        },
-        create: {
-            number: input.number,
-            firstName: input.firstName,
-            lastName: input.lastName,
-            candidatePolicy: input.candidatePolicy,
-            imageUrl: input.imageUrl,
-            partyId: input.partyId,
-            constituencyId: input.constituencyId,
-        },
-    });
+                firstName: input.firstName,
+                lastName: input.lastName,
+                candidatePolicy: input.candidatePolicy,
+                imageUrl: input.imageUrl,
+                partyId: input.partyId,
+                constituencyId: input.constituencyId
+            }
+        }
+    );
+}
+
+//อัพเดท
+export async function updateCandidateRepository(id: number, input: UpdateCandidateDto) {
+    return prisma.candidate.update(
+        {
+            where: { id },
+            data: input
+        }
+    );
 }
 
 
@@ -41,19 +38,27 @@ export async function findAllCandidatesRepository(
     orderBy: any
 ) {
     return prisma.candidate.findMany({
-        where,
-        skip,
-        take,
-        orderBy,
+
+        // เงื่อนไขค้นหา
+        where: where || {},
+        skip: skip || 0,
+        take: take || 10,
+        orderBy: orderBy || { id: "asc" },
+
+        // ดึงข้อมูล relation
         include: {
             party: {
-                select: { name: true },
+                select: {
+                    name: true,
+                },
             },
             constituency: {
                 select: {
                     number: true,
                     province: {
-                        select: { name: true },
+                        select: {
+                            name: true,
+                        },
                     },
                 },
             },
@@ -70,41 +75,34 @@ export async function countCandidatesRepository(where: any) {
 
 
 
-
-// หารายชื่อผู้สมัครจาก id ตาราง
-export function findCandidateById(candidateId: number) {
-
-    // include ใช้ได้เฉพาะ relation เท่านั้น
-    // ถ้าจะเลือกเฉพาะ field ให้ใช้ select
-
-    return prisma.candidate.findUnique(
+// หา candidate จากหมายเลข + เลขเขต
+export async function findCandidateByNumberAndConstituencyId(input: CreateCandidateDto) {
+    return prisma.candidate.findFirst(
         {
-            where: { id: candidateId },
-            select: {
-                number: true,
-                firstName: true,
-                lastName: true,
-                candidatePolicy: true,
-                imageUrl: true,
-
-                party: {
-                    select: {
-                        name: true,
-                        logoUrl: true,
-                    }
-                },
-
-                constituency: {
-                    select: {
-                        number: true,
-                        province: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
-                }
+            where: {
+                number: input.number,
+                constituencyId: input.constituencyId
             }
         }
-    );
+    )
 }
+
+//หาผู้สมัครจาก id
+export async function findCandidateById(id: number) {
+    return prisma.candidate.findUnique({ where: { id } });
+}
+
+// นับในตารางโหวต
+export async function countVotesByCandidateId(candidateId: number) {
+    return prisma.vote.count({
+        where: { candidateId },
+    });
+}
+
+// ลบผู้สมัคร
+export async function deleteCandidateRepository(id: number) {
+    return prisma.candidate.delete({
+        where: { id },
+    });
+}
+

@@ -1,13 +1,29 @@
 import { CreateCandidateDto } from "@/models/candidate/createCandidateDto";
-import { upsertCandidateRepository, findAllCandidatesRepository, countCandidatesRepository } from "../repositories/CandidatesRepository";
+import {
+    createCandidateRepository,
+    findAllCandidatesRepository,
+    countCandidatesRepository,
+    findCandidateByNumberAndConstituencyId,
+    findCandidateById,
+    updateCandidateRepository,
+    countVotesByCandidateId,
+    deleteCandidateRepository
+} from "../repositories/CandidatesRepository";
 import { GetAllCandidateQueryDto, GetAllCandidateResponseDto } from "@/models/candidate/getAllCandidateDto";
 import { findPartyById } from "../repositories/PartyRepository";
 import { findConstituencyById } from "../repositories/ConstituenciesRepository";
+import { UpdateCandidateDto } from "@/models/candidate/updateCandidateDto";
 
 
 
-// สร้าง + อัพเดท
-export async function upsertCandidateService(input: CreateCandidateDto) {
+// สร้าง candidate
+export async function createCandidateService(input: CreateCandidateDto) {
+
+    const existingCandidate = await findCandidateByNumberAndConstituencyId(input);
+
+    if (existingCandidate) {
+        throw new Error("The candidate numbers are duplicated in this constituency.")
+    }
 
     if (!input.number || input.number <= 0) {
         throw new Error("Invalid candidate number");
@@ -34,7 +50,7 @@ export async function upsertCandidateService(input: CreateCandidateDto) {
         input.candidatePolicy = party.policy;
     }
 
-    return await upsertCandidateRepository(input);
+    return await createCandidateRepository(input);
 
 }
 
@@ -45,8 +61,8 @@ export async function upsertCandidateService(input: CreateCandidateDto) {
 export async function getAllCandidatesService(query: GetAllCandidateQueryDto): Promise<GetAllCandidateResponseDto<any>> {
 
     // ข้อมูล Pagination
-    const page = query.page || 1;
-    const limit = query.limit || 10;
+    const page = query.page && query.page > 0 ? query.page : 1;
+    const limit = query.limit && query.limit > 0 ? query.limit : 10;
     const skip = (page - 1) * limit;
 
     //สร้างเงื่อนไขค้นหา
@@ -91,23 +107,29 @@ export async function getAllCandidatesService(query: GetAllCandidateQueryDto): P
             ],
         };
 
-        // ค้นหาเบอร์ผู้สมัคร ถ้าเช็คแล้วเป็นตัวเลข ให้ push เข้าไปเป็นอีกเงื่อนไขใน where
+        // ถ้าเป็นตัวเลขค้น id และ number 
         if (!isNaN(searchNumber)) {
-            where.OR.push({
-                number: searchNumber,
-            });
+            where.OR.push(
+                { id: searchNumber },
+                { number: searchNumber }
+            );
         }
     }
 
     // Sorting
+    const allowedSortFields = [
+        "id",
+        "number",
+        "firstName",
+        "lastName",
+    ];
+
     // ถ้า user ไม่ส่ง sort อะไรมาเลย ให้เรียงตาม id จากน้อยไปมาก
     let orderBy: any = { id: "asc" };
 
     // ใช้ค่าจากตัวแปรเป็นชื่อ field ให้ใส่ใน []
-    if (query.sortBy) {
-        orderBy = {
-            [query.sortBy]: query.order || "asc",
-        };
+    if (query.sortBy && allowedSortFields.includes(query.sortBy)) {
+        orderBy = { [query.sortBy]: query.order === "desc" ? "desc" : "asc", };
     }
 
     // นับจำนวน
@@ -130,8 +152,56 @@ export async function getAllCandidatesService(query: GetAllCandidateQueryDto): P
     };
 }
 
+// แก้ไขผู้สมัคร
+export async function updateCandidateService(id: number, input: UpdateCandidateDto) {
 
-// สร้างผู้สมัครแบบ upsert
+    const existingCandidate = await findCandidateById(id);
+
+    if (!existingCandidate) {
+        throw new Error("Candidate not found");
+    }
+
+    // เอามาแปลงเป็นก้อนนนี้ก่อน เพราะ req.body มี user ติดมาด้วยจาก middleware
+    const updateData: UpdateCandidateDto = {
+        number: input.number,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        candidatePolicy: input.candidatePolicy,
+        imageUrl: input.imageUrl,
+        partyId: input.partyId,
+        constituencyId: input.constituencyId,
+    };
+
+
+    return await updateCandidateRepository(id, updateData);
+}
 
 // ลบผู้สมัครจาก id
+export async function deleteCandidateService(id: number) {
 
+    const existingCandidate = await findCandidateById(id);
+
+    if (!existingCandidate) {
+        return {
+            success: false,
+            message: "Candidate not found"
+        };
+    }
+
+    const voteCount = await countVotesByCandidateId(id);
+
+    if (voteCount > 0) {
+        return {
+            success: false,
+            message: "Cannot delete candidate because there are votes"
+        };
+    } else {
+
+        await deleteCandidateRepository(id);
+
+        return {
+            success: true,
+            message: "Candidate deleted successfully"
+        };
+    }
+}
