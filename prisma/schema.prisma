@@ -120,10 +120,12 @@ model party {
 
 // ================= Candidate =================
 model candidate {
-  id       Int    @id @default(autoincrement())
-  number   Int
-  fullName String
-  imageUrl String
+  id              Int     @id @default(autoincrement())
+  number          Int
+  firstName       String
+  lastName        String
+  candidatePolicy String?
+  imageUrl        String
 
   partyId        Int
   constituencyId Int
@@ -134,6 +136,7 @@ model candidate {
   votes vote[]
 
   @@unique([number, constituencyId])
+  @@unique([partyId, constituencyId])
 }
 
 // ================= Vote =================

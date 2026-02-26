@@ -82,3 +82,12 @@ export async function getAllEventsWithProvincePagination(
     totalPages: Math.ceil(total / limit),
   };
 }
+
+
+// หาเขตจาก id
+// เอาไปตรวจสอบ input ใน CandidateService.ts
+export async function findConstituencyById(constituencyId: number) {
+  return prisma.constituency.findUnique({
+    where: { id: constituencyId },
+  });
+}

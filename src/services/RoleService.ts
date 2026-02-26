@@ -37,8 +37,8 @@ export async function assignRoleWithValidationService(
     throw new Error("User not found");
   }
 
-  const hasAdmin = existingRoles.find((r) => r.role.name === RoleName.ADMIN);
-  const hasEC = existingRoles.find((r) => r.role.name === RoleName.EC);
+  const hasAdmin = existingRoles.find((r: any) => r.role.name === RoleName.ADMIN);
+  const hasEC = existingRoles.find((r: any) => r.role.name === RoleName.EC);
 
   const adminRole = await findRoleByName(RoleName.ADMIN);
   const ecRole = await findRoleByName(RoleName.EC);
@@ -72,54 +72,6 @@ export async function assignRoleWithValidationService(
       },
     });
   }
-
-  // ใช้ transaction เพื่อความปลอดภัย
-  // await prisma.$transaction(async (tx) => {
-  //   // ถ้าจะให้ ADMIN แต่มี EC อยู่ → ลบ EC ก่อน
-  //   if (roleName === RoleName.ADMIN && hasEC) {
-  //     const ecRole = await findRoleByName(RoleName.EC);
-  //     if (ecRole) {
-  //       await tx.userRole.delete({
-  //         where: {
-  //           userId_roleId: {
-  //             userId,
-  //             roleId: ecRole.id,
-  //           },
-  //         },
-  //       });
-  //     }
-  //   }
-
-  //   // ถ้าจะให้ EC แต่มี ADMIN อยู่ → ลบ ADMIN ก่อน
-  //   if (roleName === RoleName.EC && hasAdmin) {
-  //     const adminRole = await findRoleByName(RoleName.ADMIN);
-  //     if (adminRole) {
-  //       await tx.userRole.delete({
-  //         where: {
-  //           userId_roleId: {
-  //             userId,
-  //             roleId: adminRole.id,
-  //           },
-  //         },
-  //       });
-  //     }
-  //   }
-
-  //   // เพิ่ม role ใหม่ (กันซ้ำด้วย upsert)
-  //   await tx.userRole.upsert({
-  //     where: {
-  //       userId_roleId: {
-  //         userId,
-  //         roleId,
-  //       },
-  //     },
-  //     update: {},
-  //     create: {
-  //       userId,
-  //       roleId,
-  //     },
-  //   });
-  // });
 
   return {
     success: true,

@@ -7,6 +7,7 @@ import locationRoutes from './routes/LocationRoutes'
 import voterRoutes from './routes/VoterRoutes'
 import partyRoutes from '@/routes/ECRoutes'
 import { errorHandler } from './middlewares/PrismaErrorHandler'
+import ecRoutes from "./routes/ECRoutes"
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -32,7 +33,7 @@ app.get('/', (req: Request, res: Response) =>
 app.use('/auth', authRoutes)
 
 app.use('/admin', adminRoutes)
-app.use('/ec', partyRoutes)
+app.use('/ec', ecRoutes)
 
 app.use('/location', locationRoutes)
 
