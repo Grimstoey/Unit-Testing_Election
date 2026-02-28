@@ -5,9 +5,8 @@ import adminRoutes from './routes/AdminRoutes'
 import authRoutes from './routes/AuthRoutes'
 import locationRoutes from './routes/LocationRoutes'
 import voterRoutes from './routes/VoterRoutes'
-import partyRoutes from '@/routes/ECRoutes'
 import { errorHandler } from './middlewares/PrismaErrorHandler'
-import ecRoutes from "./routes/ECRoutes"
+import ecRoutes from './routes/ECRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3000
