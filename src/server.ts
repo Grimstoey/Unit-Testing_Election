@@ -36,7 +36,7 @@ const upload = multer({ storage: multer.memoryStorage() });
     }
 
     const bucket = 'Election_App';
-    const filePath = `uploads/${file.originalname}`;
+    const filePath = `uploads`;
 
     await uploadFile(bucket, filePath, file);
 
