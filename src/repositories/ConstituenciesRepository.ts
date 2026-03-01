@@ -86,7 +86,7 @@ export async function getAllEventsWithProvincePagination(
 
 // หาเขตจาก id
 // เอาไปตรวจสอบ input ใน CandidateService.ts
-export async function findConstituencyById(constituencyId: number) {
+export async function findConstituencyByIdRepository(constituencyId: number) {
   return prisma.constituency.findUnique({
     where: { id: constituencyId },
   });

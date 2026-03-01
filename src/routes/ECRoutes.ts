@@ -60,7 +60,7 @@ router.post(
   requireAuth,
   requireRole(RoleName.EC),
   createCandidateController,
-);
+)
 
 router.patch(
   "/candidates/:id",

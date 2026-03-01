@@ -70,7 +70,7 @@ export async function getAllPartyWithPagination(limit: number, page: number) {
 
 // หาพรรคจาก id
 // เอาไปตรวจสอบ input ใน CandidateService.ts
-export async function findPartyById(partyId: number) {
+export async function findPartyByIdRepository(partyId: number) {
   return prisma.party.findUnique({
     where: { id: partyId },
     select: {

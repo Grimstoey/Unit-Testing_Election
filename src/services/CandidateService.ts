@@ -1,63 +1,166 @@
-import { CreateCandidateDto } from "@/models/candidate/createCandidateDto";
+import { CreateCandidateDto, CreateCandidateWithAuditDto } from "@/models/candidate/createCandidateDto";
 import {
     createCandidateRepository,
     findAllCandidatesRepository,
     countCandidatesRepository,
-    findCandidateByNumberAndConstituencyId,
-    findCandidateById,
+    findCandidateByNumberAndConstituencyIdRepository,
+    findCandidateByIdRepository,
     updateCandidateRepository,
-    countVotesByCandidateId,
-    deleteCandidateRepository
+    countVotesByCandidateIdRepository,
+    deleteCandidateRepository,
+    findCandidateByCitizenIdRepository,
+    findCandidateByPartyAndConstituencyRepository
 } from "../repositories/CandidatesRepository";
 import { GetAllCandidateQueryDto, GetAllCandidateResponseDto } from "@/models/candidate/getAllCandidateDto";
-import { findPartyById } from "../repositories/PartyRepository";
-import { findConstituencyById } from "../repositories/ConstituenciesRepository";
-import { UpdateCandidateDto } from "@/models/candidate/updateCandidateDto";
+import { findPartyByIdRepository } from "../repositories/PartyRepository";
+import { findConstituencyByIdRepository } from "../repositories/ConstituenciesRepository";
+import { UpdateCandidateDto, UpdatedByCandidateDto } from "@/models/candidate/updateCandidateDto";
 
 
 
-// สร้าง candidate
-export async function createCandidateService(input: CreateCandidateDto) {
+// =========================================
+//        Helper Validation Functions
+// =========================================
 
-    const existingCandidate = await findCandidateByNumberAndConstituencyId(input);
+function validateCandidateNumber(number?: number) {
+    if (number !== undefined) {
+        if (!Number.isInteger(number) || number <= 0) {
+            throw new Error("Invalid candidate number");
+        }
+    }
+}
 
-    if (existingCandidate) {
-        throw new Error("The candidate numbers are duplicated in this constituency.")
+function validateName(firstName?: string, lastName?: string) {
+
+    if (firstName !== undefined) {
+        const firstTrimmed = firstName.trim();
+
+        if (firstTrimmed.length === 0) {
+            throw new Error("First name is required");
+        }
     }
 
-    if (!input.number || input.number <= 0) {
-        throw new Error("Invalid candidate number");
+    if (lastName !== undefined) {
+        const lastTrimmed = lastName.trim();
+
+        if (lastTrimmed.length === 0) {
+            throw new Error("Last name is required");
+        }
+    }
+}
+
+function validateImageUrl(imageUrl?: string) {
+    if (imageUrl !== undefined) {
+        const imaTrimmed = imageUrl.trim();
+
+        if (imaTrimmed.length === 0) {
+            throw new Error("Image URL is required");
+        }
+    }
+}
+
+async function validatePartyAndConstituency(
+    partyId?: number,
+    constituencyId?: number
+) {
+
+    if (partyId !== undefined) {
+        if (partyId <= 0) {
+            throw new Error("Invalid party id");
+        }
+
+        const party = await findPartyByIdRepository(partyId);
+        if (!party) {
+            throw new Error("Party not found");
+        }
     }
 
-    if (!input.firstName || !input.lastName || !input.firstName.trim() || !input.lastName.trim()) {
-        throw new Error("Please enter first and last name.");
+    if (constituencyId !== undefined) {
+        if (constituencyId <= 0) {
+            throw new Error("Invalid constituency id");
+        }
+
+        const constituency = await findConstituencyByIdRepository(constituencyId);
+        if (!constituency) {
+            throw new Error("Constituency not found");
+        }
     }
-
-    const party = await findPartyById(input.partyId);
-    const constituency = await findConstituencyById(input.constituencyId);
-
-    if (!party) {
-        throw new Error("Party not found");
-    }
-
-    if (!constituency) {
-        throw new Error("Constituency not found");
-    }
-
-    if (input.candidatePolicy && input.candidatePolicy.trim().length > 0) {
-        input.candidatePolicy = input.candidatePolicy.trim();
-    } else {
-        input.candidatePolicy = party.policy;
-    }
-
-    return await createCandidateRepository(input);
-
 }
 
 
+// =========================================
+//              สร้าง candidate
+// =========================================
+export async function createCandidateService(input: CreateCandidateDto, userId: number) {
+
+    // ลบช่องว่าง
+    const firstName = input.firstName.trim();
+    const lastName = input.lastName.trim();
+    const imageUrl = input.imageUrl.trim();
+    const citizenId = input.citizenId.trim();
 
 
-// ดูรายชื่อผู้สมัครทั้งหมด แบบแบ่งหน้าได้
+    // Validate
+    validateCandidateNumber(input.number);
+    validateName(firstName, lastName);
+    validateImageUrl(imageUrl);
+
+
+    if (!citizenId || citizenId.length != 13) {
+        throw new Error("Citizen ID is incorrect");
+    }
+
+    // เช็ค citizenId ซ้ำ
+    const existingCitizen = await findCandidateByCitizenIdRepository(citizenId);
+    if (existingCitizen) {
+        throw new Error("Citizen ID already exists");
+    }
+
+    // ตรวจสอบ party
+    const existingParty = await findPartyByIdRepository(input.partyId);
+    if (!existingParty) {
+        throw new Error("Party not found");
+    }
+
+    // ตรวจสอบ constituency
+    const existingConstituency = await findConstituencyByIdRepository(input.constituencyId);
+    if (!existingConstituency || undefined) throw new Error("Constituency not found");
+
+    // ตรวจสอบหมายเลขซ้ำในเขต
+    const duplicateNum = await findCandidateByNumberAndConstituencyIdRepository(input.number, input.constituencyId);
+    if (duplicateNum) {
+        throw new Error("The candidate numbers are duplicated in this constituency.")
+    }
+
+    // ถ้าไม่มี policy ใช้ policy พรรค
+    let finalPolicy: string;
+
+    if (input.candidatePolicy && input.candidatePolicy.trim().length > 0) {
+        finalPolicy = input.candidatePolicy.trim();
+    } else {
+        finalPolicy = existingParty.policy;
+    }
+
+    const newCandidate: CreateCandidateWithAuditDto = {
+        citizenId: citizenId,
+        number: input.number,
+        firstName: firstName,
+        lastName: lastName,
+        candidatePolicy: finalPolicy,
+        imageUrl: imageUrl,
+        partyId: input.partyId,
+        constituencyId: input.constituencyId,
+        createdBy: userId,
+        updatedBy: userId,
+    };
+
+    return await createCandidateRepository(newCandidate);
+}
+
+
+// =========================================
+//      ดูรายชื่อผู้สมัครทั้งหมด แบบแบ่งหน้าได้
+// =========================================
 export async function getAllCandidatesService(query: GetAllCandidateQueryDto): Promise<GetAllCandidateResponseDto<any>> {
 
     // ข้อมูล Pagination
@@ -65,64 +168,106 @@ export async function getAllCandidatesService(query: GetAllCandidateQueryDto): P
     const limit = query.limit && query.limit > 0 ? query.limit : 10;
     const skip = (page - 1) * limit;
 
-    //สร้างเงื่อนไขค้นหา
-    let where: any = {};
+    // แปลงเป็นเลข
+    // const numPartyId = query.partyId ? Number(query.partyId) : undefined;
+    // const numConstituencyId = query.constituencyId ? Number(query.constituencyId) : undefined;
+    // const numProvinceId = query.provinceId ? Number(query.provinceId) : undefined;
 
-    if (query.search) {
+    const numPartyId = query.partyId;
+    const numConstituencyId = query.constituencyId;
+    const numProvinceId = query.provinceId;
 
-        const searchNumber = Number(query.search);
+    const AND: any[] = [];
 
-        where = {
-            OR: [
-                {
-                    firstName: {
-                        contains: query.search,
+
+    if (query.search && query.search.trim().length > 0) {
+
+        const searchValue = query.search.trim();
+        const OR: any[] = [];
+
+        // เช็คว่าเป็นตัวเลขล้วนหรือไม่
+        const isAllDigits = !isNaN(Number(searchValue));
+
+        // เช็คว่าเป็นเลข 13 หลักหรือไม่
+        const isCitizenId = isAllDigits && searchValue.length === 13;
+
+
+        // ถ้าเป็นเลข 13 หลัก เป็น citizenId เท่านั้น
+        if (isCitizenId) {
+
+            OR.push({
+                citizenId: searchValue,
+            });
+
+        }
+        else if (isAllDigits) {
+
+            const searchNumber = Number(searchValue);
+
+            OR.push(
+                { id: searchNumber },
+                { number: searchNumber }
+            );
+
+        }
+
+        // ค้นหาข้อความทั่วไป
+        OR.push(
+            {
+                firstName: {
+                    contains: searchValue,
+                    mode: "insensitive",
+                },
+            },
+            {
+                lastName: {
+                    contains: searchValue,
+                    mode: "insensitive",
+                },
+            },
+            {
+                party: {
+                    name: {
+                        contains: searchValue,
                         mode: "insensitive",
                     },
                 },
-                {
-                    lastName: {
-                        contains: query.search,
-                        mode: "insensitive",
-                    },
-                },
-                {
-                    party: {
+            },
+            {
+                constituency: {
+                    province: {
                         name: {
-                            contains: query.search,
+                            contains: searchValue,
                             mode: "insensitive",
                         },
                     },
                 },
-                {
-                    constituency: {
-                        province: {
-                            name: {
-                                contains: query.search,
-                                mode: "insensitive",
-                            },
-                        },
-                    },
-                },
-            ],
-        };
+            }
+        );
 
-        // ถ้าเป็นตัวเลขค้น id และ number 
-        if (!isNaN(searchNumber)) {
-            where.OR.push(
-                { id: searchNumber },
-                { number: searchNumber }
-            );
-        }
+        AND.push({ OR });
     }
 
+    // --------- FILTER ---------
+    if (numPartyId !== undefined) {
+        AND.push({ partyId: numPartyId });
+    }
+
+    if (numConstituencyId !== undefined) {
+        AND.push({ constituencyId: numConstituencyId });
+    }
+
+    if (numProvinceId !== undefined) {
+        AND.push({
+            constituency: {
+                provinceId: numProvinceId,
+            },
+        });
+    }
+
+    const where = AND.length > 0 ? { AND } : {};
     // Sorting
-    const allowedSortFields = [
-        "id",
-        "number",
-        "firstName",
-        "lastName",
-    ];
+    const allowedSortFields = ["id", "number", "firstName", "lastName"];
 
     // ถ้า user ไม่ส่ง sort อะไรมาเลย ให้เรียงตาม id จากน้อยไปมาก
     let orderBy: any = { id: "asc" };
@@ -152,56 +297,129 @@ export async function getAllCandidatesService(query: GetAllCandidateQueryDto): P
     };
 }
 
-// แก้ไขผู้สมัคร
-export async function updateCandidateService(id: number, input: UpdateCandidateDto) {
 
-    const existingCandidate = await findCandidateById(id);
+// =========================================
+//                 อัพเดทผู้สมัคร
+// =========================================
+export async function updateCandidateService(
+    id: number,
+    input: UpdateCandidateDto,
+    updatedBy: number
+) {
+
+    // ตรวจสอบว่ามี candidate จริงไหม
+    const existingCandidate = await findCandidateByIdRepository(id);
 
     if (!existingCandidate) {
         throw new Error("Candidate not found");
     }
 
-    // เอามาแปลงเป็นก้อนนนี้ก่อน เพราะ req.body มี user ติดมาด้วยจาก middleware
-    const updateData: UpdateCandidateDto = {
+    // Validate field ที่ส่งมา
+    validateCandidateNumber(input.number);
+    validateName(input.firstName, input.lastName);
+    validateImageUrl(input.imageUrl);
+
+    await validatePartyAndConstituency(
+        input.partyId,
+        input.constituencyId
+    );
+
+    // เช็ค citizenId ซ้ำ (ถ้ามีการแก้)
+    if (input.citizenId !== undefined) {
+
+        const trimmedCitizenId = input.citizenId.trim();
+
+        if (!trimmedCitizenId) {
+            throw new Error("Citizen ID is required");
+        }
+
+        const duplicateCitizen =
+            await findCandidateByCitizenIdRepository(trimmedCitizenId);
+
+        if (duplicateCitizen && duplicateCitizen.id !== id) {
+            throw new Error("Citizen ID already exists");
+        }
+
+        input.citizenId = trimmedCitizenId;
+    }
+
+    // เช็ค number ซ้ำในเขต
+    if (input.number !== undefined || input.constituencyId !== undefined) {
+
+        const number = input.number ?? existingCandidate.number;
+        const constituency =
+            input.constituencyId ?? existingCandidate.constituencyId;
+
+        const duplicate =
+            await findCandidateByNumberAndConstituencyIdRepository(
+                number,
+                constituency
+            );
+
+        if (duplicate && duplicate.id !== id) {
+            throw new Error(
+                "Duplicate candidate number in this constituency"
+            );
+        }
+    }
+
+    // เช็ค party ซ้ำในเขต
+    if (input.partyId !== undefined || input.constituencyId !== undefined) {
+
+        const partyId = input.partyId ?? existingCandidate.partyId;
+        const constituencyId =
+            input.constituencyId ?? existingCandidate.constituencyId;
+
+        const duplicateParty =
+            await findCandidateByPartyAndConstituencyRepository(
+                partyId,
+                constituencyId
+            );
+
+        if (duplicateParty && duplicateParty.id !== id) {
+            throw new Error(
+                "This party already has a candidate in this constituency"
+            );
+        }
+    }
+
+    // สร้าง object สำหรับ update
+    const updateData: UpdatedByCandidateDto = {
+        citizenId: input.citizenId,
         number: input.number,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        candidatePolicy: input.candidatePolicy,
-        imageUrl: input.imageUrl,
+        firstName: input.firstName?.trim(),
+        lastName: input.lastName?.trim(),
+        candidatePolicy: input.candidatePolicy?.trim(),
+        imageUrl: input.imageUrl?.trim(),
         partyId: input.partyId,
         constituencyId: input.constituencyId,
+        updatedBy: updatedBy,
     };
-
 
     return await updateCandidateRepository(id, updateData);
 }
 
-// ลบผู้สมัครจาก id
+
+// =========================================
+//              ลบผู้สมัครจาก id
+// =========================================
 export async function deleteCandidateService(id: number) {
 
-    const existingCandidate = await findCandidateById(id);
+    const existingCandidate = await findCandidateByIdRepository(id);
 
     if (!existingCandidate) {
-        return {
-            success: false,
-            message: "Candidate not found"
-        };
+        throw new Error("Candidate not found");
     }
 
-    const voteCount = await countVotesByCandidateId(id);
+    const voteCount = await countVotesByCandidateIdRepository(id);
 
     if (voteCount > 0) {
-        return {
-            success: false,
-            message: "Cannot delete candidate because there are votes"
-        };
-    } else {
-
-        await deleteCandidateRepository(id);
-
-        return {
-            success: true,
-            message: "Candidate deleted successfully"
-        };
+        throw new Error(
+            "Cannot delete candidate because there are votes"
+        );
     }
+
+    await deleteCandidateRepository(id);
+
+    return { message: "Candidate deleted successfully" };
 }
