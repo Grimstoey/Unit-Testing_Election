@@ -121,6 +121,7 @@ model party {
 // ================= Candidate =================
 model candidate {
   id              Int     @id @default(autoincrement())
+  citizenId       String  @unique
   number          Int
   firstName       String
   lastName        String
@@ -129,6 +130,12 @@ model candidate {
 
   partyId        Int
   constituencyId Int
+
+  createdBy Int
+  updatedBy Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   party        party        @relation(fields: [partyId], references: [id])
   constituency constituency @relation(fields: [constituencyId], references: [id])

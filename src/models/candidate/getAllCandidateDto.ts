@@ -4,6 +4,10 @@ export type GetAllCandidateQueryDto = {
     search?: string;
     sortBy?: "id" | "firstName" | "lastName" | "party" | "number" | "provinceId";
     order?: "asc" | "desc";
+
+    partyId?: number
+    constituencyId?: number
+    provinceId?: number
 };
 
 // ใช้ <T> เพื่อความยืนหยุ่นของ response 
@@ -14,4 +18,8 @@ export type GetAllCandidateResponseDto<TCandidate> = {
     page: number;
     limit: number;
     totalPages: number;
+
+    partyId?: number
+    constituencyId?: number
+    provinceId?: number
 };

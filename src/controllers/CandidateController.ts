@@ -3,40 +3,76 @@ import { GetAllCandidateQueryDto } from "@/models/candidate/getAllCandidateDto";
 import { getAllCandidatesService, createCandidateService, updateCandidateService, deleteCandidateService } from "@/services/CandidateService";
 import { CreateCandidateDto } from "@/models/candidate/createCandidateDto";
 
-//สร้าง candidate
+//helper function
+function getUsername(req: Request): string {
+    return (req as any).user.username;
+}
+
+// =========================================
+//              สร้าง candidate
+// =========================================
 export async function createCandidateController(req: Request, res: Response) {
 
-    const input: CreateCandidateDto = {
-        number: req.body.number,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        candidatePolicy: req.body.candidatePolicy,
-        imageUrl: req.body.imageUrl,
-        partyId: req.body.partyId,
-        constituencyId: req.body.constituencyId,
-    };
+    try {
 
-    const candidate = await createCandidateService(input);
+        const user = req.body.user
 
-    return res.status(200).json({
-        message: "Candidate created successfully",
-        data: candidate,
-    });
+        console.log("USER:", user)
+        console.log("USERNAME:", user?.firstName)
+
+        if (!user) {
+            return res.status(401).json({ message: "Unauthorized" })
+        }
+
+
+        const input: CreateCandidateDto = {
+            citizenId: req.body.citizenId,
+            number: Number(req.body.number),
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            candidatePolicy: req.body.candidatePolicy,
+            imageUrl: req.body.imageUrl,
+            partyId: Number(req.body.partyId),
+            constituencyId: Number(req.body.constituencyId),
+        };
+
+        const candidate = await createCandidateService(input, user.id);
+
+        return res.status(201).json({
+            message: "Candidate created successfully",
+            data: candidate,
+        });
+
+    } catch (error: any) {
+
+        console.error("CREATE CANDIDATE ERROR:", error);
+
+        return res.status(400).json({
+            message: error.message,
+        });
+    }
 
 }
 
-
-// เรียกดู candidate ทั้งหมด
+// =========================================
+//          เรียกดู candidate ทั้งหมด
+// =========================================
 export async function getAllCandidatesController(req: Request, res: Response) {
-    const page = req.query.page ? parseInt(req.query.page as string) : 1;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const pageInt = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limitInt = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
     const queryDto: GetAllCandidateQueryDto = {
-        page,
-        limit,
-        search: req.query.search as string,
+        page: pageInt,
+        limit: limitInt,
+        search: req.query.search as string | undefined,
         sortBy: req.query.sortBy as any,
         order: req.query.order as any,
+
+        partyId: req.query.partyId ? parseInt(req.query.partyId as string) : undefined,
+
+        constituencyId: req.query.constituencyId ? parseInt(req.query.constituencyId as string) : undefined,
+
+        provinceId: req.query.provinceId ? parseInt(req.query.provinceId as string) : undefined,
     };
 
     const result = await getAllCandidatesService(queryDto);
@@ -44,44 +80,58 @@ export async function getAllCandidatesController(req: Request, res: Response) {
     res.status(200).json(result);
 }
 
-// update candidate
+
+// =========================================
+//              update candidate
+// =========================================
 export async function updateCandidateController(req: Request, res: Response) {
 
-    console.log(req.body);
 
-    const intId = Number(req.params.id);
+    try {
 
-    if (!intId || intId <= 0) {
+        const intId = Number(req.params.id);
+
+        if (isNaN(intId) || intId <= 0) {
+            return res.status(400).json({
+                message: "Invalid candidate id",
+            });
+        }
+
+        const user = req.body.user
+
+        const updatedCandidate = await updateCandidateService(
+            intId,
+            req.body,
+            user.id
+        );
+
+        return res.status(200).json({
+            message: "Candidate updated successfully",
+            data: updatedCandidate,
+        });
+
+    } catch (error: any) {
         return res.status(400).json({
-            message: "Invalid candidate id",
+            message: error.message,
         });
     }
-
-    const updateCandidate = await updateCandidateService(intId, req.body);
-
-    return res.status(200).json({
-        message: "Candidate updated successfully",
-        data: updateCandidate
-    });
 
 }
 
 // ลบ candidate
 export async function deleteCandidateController(req: Request, res: Response) {
 
-    const intId = Number(req.params.id);
+    try {
+        const intId = Number(req.params.id);
 
-    if (isNaN(intId)) {
+        const result = await deleteCandidateService(intId);
+
+        return res.status(200).json(result);
+
+    } catch (error: any) {
         return res.status(400).json({
-            message: "Invalid candidate id",
+            success: false,
+            message: error.message
         });
-    }
-
-    const deleteCandidate = await deleteCandidateService(intId);
-
-    if (!deleteCandidate.success) {
-        return res.status(400).json({ message: deleteCandidate.message });
-    } else {
-        return res.status(200).json({ message: deleteCandidate.message });
     }
 }
