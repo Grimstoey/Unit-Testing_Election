@@ -1,6 +1,5 @@
 import s3Client from '../awsConfig'
-import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { randomBytes } from 'crypto'
 import sharp from 'sharp'
 
@@ -23,6 +22,13 @@ async function compressImage(
 // เช็คว่าเป็นไฟล์รูปภาพหรือไม่
 function isImage(mimetype: string): boolean {
   return mimetype.startsWith('image/')
+}
+
+// สร้าง Public URL จาก Supabase Storage
+function getPublicUrl(bucket: string, filePath: string): string {
+  const endpoint = process.env.SUPABASE_ENDPOINT_URL || ''
+  const baseUrl = endpoint.replace('/storage/v1/s3', '')
+  return `${baseUrl}/storage/v1/object/public/${bucket}/${filePath}`
 }
 
 export async function uploadFile(
@@ -57,14 +63,14 @@ export async function uploadFile(
   try {
     const data = await s3Client.send(new PutObjectCommand(params))
     console.log('File uploaded successfully:', data)
-    const presignedUrl = await getPresignedUrl(bucket, saltedFilePath, 3600)
+    const publicUrl = getPublicUrl(bucket, saltedFilePath)
 
     return {
       ok: true as const,
       status: 200,
       message: 'File uploaded successfully',
       data: {
-        url: presignedUrl,
+        url: publicUrl,
       },
     }
   } catch (error) {
@@ -74,23 +80,5 @@ export async function uploadFile(
       status: 500,
       message: 'Internal server error',
     }
-  }
-}
-
-export async function getPresignedUrl(
-  bucket: string,
-  filePath: string,
-  expiresIn: number = 3600,
-): Promise<string> {
-  const command = new GetObjectCommand({
-    Bucket: bucket,
-    Key: filePath,
-  })
-  try {
-    const url = await getSignedUrl(s3Client, command, { expiresIn })
-    return url
-  } catch (error) {
-    console.error('Error generating presigned URL:', error)
-    throw error
   }
 }
