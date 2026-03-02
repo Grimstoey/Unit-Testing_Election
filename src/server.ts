@@ -7,8 +7,7 @@ import locationRoutes from './routes/LocationRoutes'
 import voterRoutes from './routes/VoterRoutes'
 import { errorHandler } from './middlewares/PrismaErrorHandler'
 import ecRoutes from './routes/ECRoutes'
-import multer from 'multer'
-import { uploadFile } from './services/UploadFileService'
+import uploadRoutes from './routes/UploadRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -23,7 +22,6 @@ const corsOptions: CorsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }
-const upload = multer({ storage: multer.memoryStorage() })
 
 app.use(cors(corsOptions))
 
@@ -43,23 +41,7 @@ app.use('/location', locationRoutes)
 
 app.use('/voter', voterRoutes)
 
-app.post('/upload', upload.single('file'), async (req: any, res: any) => {
-  try {
-    const file = req.file
-    if (!file) {
-      return res.status(400).send('No file uploaded.')
-    }
-
-    const bucket = 'Election_App'
-    const filePath = `uploads`
-
-    await uploadFile(bucket, filePath, file)
-
-    res.status(200).send('File uploaded successfully.')
-  } catch (error) {
-    res.status(500).send('Error uploading file.')
-  }
-})
+app.use('/upload', uploadRoutes)
 
 // เอาไว้อันท้ายสุดหลังจากทุกอย่างไหลมาแล้ว ห้ามย้าย!!!!
 app.use(errorHandler)
