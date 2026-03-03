@@ -9,7 +9,13 @@ import { Router } from 'express'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { requireRole } from '@/middlewares/RoleMiddleware'
 import { RoleName } from '@/models/role/roleNameDto'
-import { getAllCandidatesController, createCandidateController, updateCandidateController, deleteCandidateController } from "../controllers/CandidateController";
+import {
+  getAllCandidatesController,
+  createCandidateController,
+  updateCandidateController,
+  deleteCandidateController,
+} from '../controllers/CandidateController'
+import { getAllConstituencyWithPaginationController } from '@/controllers/ConstituencyController'
 
 const router = Router()
 
@@ -53,7 +59,7 @@ router.get(
   requireAuth,
   requireRole(RoleName.EC),
   getAllCandidatesController,
-);
+)
 
 router.post(
   '/candidates',
@@ -63,20 +69,27 @@ router.post(
 )
 
 router.patch(
-  "/candidates/:id",
+  '/candidates/:id',
   requireAuth,
   requireRole(RoleName.EC),
-  updateCandidateController
-);
+  updateCandidateController,
+)
 
 router.delete(
-  "/candidates/:id",
+  '/candidates/:id',
   requireAuth,
   requireRole(RoleName.EC),
-  deleteCandidateController
-);
+  deleteCandidateController,
+)
 
-
-
+//==================================
+//            Constituencies
+//==================================
+router.get(
+  '/constituencies',
+  requireAuth,
+  requireRole(RoleName.EC),
+  getAllConstituencyWithPaginationController,
+)
 
 export default router

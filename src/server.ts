@@ -1,28 +1,30 @@
-import cors from 'cors'
+import cors, { CorsOptions } from 'cors'
 import 'dotenv/config'
 import express, { Request, Response } from 'express'
 import adminRoutes from './routes/AdminRoutes'
 import authRoutes from './routes/AuthRoutes'
 import locationRoutes from './routes/LocationRoutes'
 import voterRoutes from './routes/VoterRoutes'
-import partyRoutes from '@/routes/ECRoutes'
 import { errorHandler } from './middlewares/PrismaErrorHandler'
-import ecRoutes from "./routes/ECRoutes"
+import ecRoutes from './routes/ECRoutes'
+import uploadRoutes from './routes/UploadRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const corsOptions: CorsOptions = {
+  origin: [
+    process.env.FRONTEND_URL as string,
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://electon-frontend-project.vercel.app',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}
 
-app.use(
-  cors({
-    origin: [
-      process.env.FRONTEND_URL as string,
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://electon-frontend-project.vercel.app',
-    ],
-    credentials: true,
-  }),
-)
+app.use(cors(corsOptions))
+
 app.use(express.json())
 
 app.get('/', (req: Request, res: Response) =>
@@ -38,6 +40,8 @@ app.use('/ec', ecRoutes)
 app.use('/location', locationRoutes)
 
 app.use('/voter', voterRoutes)
+
+app.use('/upload', uploadRoutes)
 
 // เอาไว้อันท้ายสุดหลังจากทุกอย่างไหลมาแล้ว ห้ามย้าย!!!!
 app.use(errorHandler)

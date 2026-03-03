@@ -58,7 +58,7 @@ router.get(
 )
 
 router.delete(
-  'users/:id/roles',
+  '/users/:id/roles',
   requireAuth,
   requireRole(RoleName.ADMIN),
   removeUserRoleController,
