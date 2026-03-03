@@ -174,10 +174,6 @@ export async function getAllCandidatesService(query: GetAllCandidateQueryDto): P
     const limit = query.limit && query.limit > 0 ? query.limit : 10;
     const skip = (page - 1) * limit;
 
-    // แปลงเป็นเลข
-    // const numPartyId = query.partyId ? Number(query.partyId) : undefined;
-    // const numConstituencyId = query.constituencyId ? Number(query.constituencyId) : undefined;
-    // const numProvinceId = query.provinceId ? Number(query.provinceId) : undefined;
 
     const numPartyId = query.partyId;
     const numConstituencyId = query.constituencyId;
