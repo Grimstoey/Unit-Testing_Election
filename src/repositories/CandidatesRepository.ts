@@ -59,19 +59,35 @@ export async function findAllCandidatesRepository(
     take: take || 10,
     orderBy: orderBy || { id: 'asc' },
 
-    // ดึงข้อมูล relation
-    include: {
-      party: {
+
         select: {
-          name: true,
-        },
-      },
-      constituency: {
-        select: {
-          number: true,
-          province: {
-            select: {
-              name: true,
+            id: true,
+            citizenId: true,
+            number: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+            candidatePolicy: true,
+
+            party: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+
+            constituency: {
+                select: {
+                    id: true,
+                    number: true,
+                    provinceId: true,
+                    province: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
             },
           },
         },
@@ -79,6 +95,7 @@ export async function findAllCandidatesRepository(
     },
   })
 }
+
 
 // นับจำนวนทั้งหมด
 export async function countCandidatesRepository(where: any) {
