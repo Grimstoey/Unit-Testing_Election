@@ -18,7 +18,7 @@ const corsOptions: CorsOptions = {
     'http://localhost:3001',
     'https://electon-frontend-project.vercel.app',
   ],
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }

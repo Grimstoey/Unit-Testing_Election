@@ -15,7 +15,7 @@ import {
   updateCandidateController,
   deleteCandidateController,
 } from '../controllers/CandidateController'
-import { findAllConstituenciesController } from '@/controllers/ConstituencyController'
+import { getAllConstituencyWithPaginationController } from '@/controllers/ConstituencyController'
 
 const router = Router()
 
@@ -82,11 +82,14 @@ router.delete(
   deleteCandidateController,
 )
 
+//==================================
+//            Constituencies
+//==================================
 router.get(
   '/constituencies',
   requireAuth,
   requireRole(RoleName.EC),
-  findAllConstituenciesController,
+  getAllConstituencyWithPaginationController,
 )
 
 export default router
