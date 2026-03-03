@@ -98,6 +98,7 @@ export async function createCandidateService(input: CreateCandidateDto, userId: 
     const lastName = input.lastName.trim();
     const imageUrl = input.imageUrl.trim();
     const citizenId = input.citizenId.trim();
+    const constituency = input.constituencyId;
 
 
     // Validate
@@ -108,6 +109,11 @@ export async function createCandidateService(input: CreateCandidateDto, userId: 
 
     if (!citizenId || citizenId.length != 13) {
         throw new Error("Citizen ID is incorrect");
+    }
+
+    // ดัก constituency
+    if (!constituency || isNaN(constituency)) {
+        throw new Error("Invalid constituencyId");
     }
 
     // เช็ค citizenId ซ้ำ
