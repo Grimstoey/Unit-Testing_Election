@@ -1,9 +1,6 @@
-import {
-  CreateCandidateDto,
-  CreateCandidateWithAuditDto,
-} from '@/models/candidate/createCandidateDto'
-import { prisma } from '../lib/prisma'
+import { CreateCandidateWithAuditDto } from '@/models/candidate/createCandidateDto'
 import { UpdatedByCandidateDto } from '@/models/candidate/updateCandidateDto'
+import { prisma } from '../lib/prisma'
 
 // สร้างผู้สมัคร
 export async function createCandidateRepository(
@@ -59,35 +56,31 @@ export async function findAllCandidatesRepository(
     take: take || 10,
     orderBy: orderBy || { id: 'asc' },
 
+    select: {
+      id: true,
+      citizenId: true,
+      number: true,
+      firstName: true,
+      lastName: true,
+      imageUrl: true,
+      candidatePolicy: true,
 
+      party: {
         select: {
-            id: true,
-            citizenId: true,
-            number: true,
-            firstName: true,
-            lastName: true,
-            imageUrl: true,
-            candidatePolicy: true,
+          id: true,
+          name: true,
+        },
+      },
 
-            party: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-
-            constituency: {
-                select: {
-                    id: true,
-                    number: true,
-                    provinceId: true,
-                    province: {
-                        select: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                },
+      constituency: {
+        select: {
+          id: true,
+          number: true,
+          provinceId: true,
+          province: {
+            select: {
+              id: true,
+              name: true,
             },
           },
         },
@@ -95,7 +88,6 @@ export async function findAllCandidatesRepository(
     },
   })
 }
-
 
 // นับจำนวนทั้งหมด
 export async function countCandidatesRepository(where: any) {

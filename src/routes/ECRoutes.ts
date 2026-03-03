@@ -1,21 +1,21 @@
+import { getAllConstituencyWithPaginationController } from '@/controllers/ConstituencyController'
 import {
   createPartyController,
   deletePartyController,
   editPartyController,
-  getAllPartyWithPaginationController,
   findPartyByIdController,
+  getAllPartyWithPaginationController,
 } from '@/controllers/PartyController'
-import { Router } from 'express'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { requireRole } from '@/middlewares/RoleMiddleware'
 import { RoleName } from '@/models/role/roleNameDto'
+import { Router } from 'express'
 import {
-  getAllCandidatesController,
   createCandidateController,
-  updateCandidateController,
   deleteCandidateController,
+  getAllCandidatesController,
+  updateCandidateController,
 } from '../controllers/CandidateController'
-import { getAllConstituencyWithPaginationController } from '@/controllers/ConstituencyController'
 
 const router = Router()
 
@@ -83,7 +83,7 @@ router.delete(
 )
 
 //==================================
-//            Constituencies
+//            Constituency
 //==================================
 router.get(
   '/constituencies',
