@@ -69,9 +69,10 @@ export async function findAllCandidatesRepository(
         select: {
           id: true,
           name: true,
+          policy: true,
+          logoUrl: true,
         },
       },
-
       constituency: {
         select: {
           id: true,
