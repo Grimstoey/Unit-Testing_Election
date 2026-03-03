@@ -3,10 +3,6 @@ import { GetAllCandidateQueryDto } from "@/models/candidate/getAllCandidateDto";
 import { getAllCandidatesService, createCandidateService, updateCandidateService, deleteCandidateService } from "@/services/CandidateService";
 import { CreateCandidateDto } from "@/models/candidate/createCandidateDto";
 
-//helper function
-function getUsername(req: Request): string {
-    return (req as any).user.username;
-}
 
 // =========================================
 //              สร้าง candidate
@@ -22,6 +18,12 @@ export async function createCandidateController(req: Request, res: Response) {
 
         if (!user) {
             return res.status(401).json({ message: "Unauthorized" })
+        }
+
+        if (!req.body.constituencyId) {
+            return res.status(400).json({
+                message: "constituencyId is required",
+            });
         }
 
 
