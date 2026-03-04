@@ -1,5 +1,5 @@
-import { GetAllUsersQueryDto } from "@/models/user/getAllUsersDto";
-import { prisma } from "../lib/prisma";
+import { GetAllUsersQueryDto } from '@/models/user/getAllUsersDto'
+import { prisma } from '../lib/prisma'
 
 // หา user จาก id
 export function findByUserId(userId: number) {
@@ -36,7 +36,7 @@ export function findByUserId(userId: number) {
         },
       },
     },
-  });
+  })
 }
 
 // หา user จากเลขบัตรประชาชน
@@ -75,22 +75,22 @@ export function findByCitizenId(citizenId: string) {
         },
       },
     },
-  });
+  })
 }
 
 // สร้าง user
 export async function createUser(input: {
-  citizenId: string;
-  hashedPassword: string;
+  citizenId: string
+  hashedPassword: string
 
-  firstName: string;
-  lastName: string;
-  address: string;
+  firstName: string
+  lastName: string
+  address: string
 
-  provinceId: number;
-  districtId: number;
+  provinceId: number
+  districtId: number
 
-  roleId: number;
+  roleId: number
 }) {
   return prisma.user.create({
     data: {
@@ -139,24 +139,35 @@ export async function createUser(input: {
         },
       },
     },
-  });
+  })
 }
 
 //เรียก user ทั้งหมด
 export async function getAllUsers(query: GetAllUsersQueryDto) {
-  const { page, limit, search, sortBy = "id", order = "asc" } = query;
+  const {
+    page,
+    limit,
+    search,
+    sortBy = 'id',
+    order = 'asc',
+    provinceId,
+  } = query
 
-  const skip = (page - 1) * limit;
+  const skip = (page - 1) * limit
 
   const where = search
     ? {
         OR: [
-          { citizenId: { contains: search, mode: "insensitive" as const } },
-          { firstName: { contains: search, mode: "insensitive" as const } },
-          { lastName: { contains: search, mode: "insensitive" as const } },
+          { citizenId: { contains: search, mode: 'insensitive' as const } },
+          { firstName: { contains: search, mode: 'insensitive' as const } },
+          { lastName: { contains: search, mode: 'insensitive' as const } },
         ],
       }
-    : {};
+    : {}
+
+  if (provinceId) {
+    Object.assign(where, { provinceId })
+  }
 
   const [total, users] = await Promise.all([
     prisma.user.count({ where }),
@@ -196,7 +207,7 @@ export async function getAllUsers(query: GetAllUsersQueryDto) {
         },
       },
     }),
-  ]);
+  ])
 
   return {
     total,
@@ -205,5 +216,5 @@ export async function getAllUsers(query: GetAllUsersQueryDto) {
     limit,
     //ปัดเศษขึ้น
     totalPages: Math.ceil(total / limit),
-  };
+  }
 }

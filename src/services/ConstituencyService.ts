@@ -1,50 +1,53 @@
 import {
   addConstituency,
+  closeAllConstituencies,
   deleteConstituency,
   editConstituency,
   getAllConstituencies,
   getAllEventsWithProvincePagination,
   getConstituencyById,
-} from "@/repositories/ConstituenciesRepository";
+  openAllConstituencies,
+  toggleConstituencyStatus,
+} from '@/repositories/ConstituenciesRepository'
 
 export async function findAllConstituenciesService() {
-  const result = await getAllConstituencies();
+  const result = await getAllConstituencies()
 
   if (!result) {
     return {
       ok: false as const,
       status: 500,
-      message: "Internal server error",
-    };
+      message: 'Internal server error',
+    }
   }
 
   return {
     ok: true as const,
     status: 200,
     data: result,
-  };
+  }
 }
 
 export const createConstituencyService = async (
   number: number,
   provinceId: number,
 ) => {
-  const result = await addConstituency(number, provinceId);
+  const result = await addConstituency(number, provinceId)
 
   return {
     ok: true as const,
     status: 200,
     data: result,
-  };
-};
+  }
+}
 export async function deleteConstituencyService(id: number) {
-  const result = await deleteConstituency(id);
+  const result = await deleteConstituency(id)
 
   return {
     ok: true as const,
     status: 200,
     data: result,
-  };
+  }
 }
 export async function editConstituencyService(
   id: number,
@@ -52,25 +55,26 @@ export async function editConstituencyService(
   provinceId: number,
   isClosed: boolean,
 ) {
-  const result = await editConstituency(id, number, provinceId, isClosed);
+  const result = await editConstituency(id, number, provinceId, isClosed)
 
   if (!result) {
     return {
       ok: false as const,
       status: 404,
-      message: "Constituency not found",
-    };
+      message: 'Constituency not found',
+    }
   }
 
   return {
     ok: true as const,
     status: 200,
     data: result,
-  };
+  }
 }
 export async function findConstituencyById(id: number) {
-  return getConstituencyById(id);
+  return getConstituencyById(id)
 }
+
 export async function getAllConstituencyWithPagination(
   limit: number,
   page: number,
@@ -80,6 +84,28 @@ export async function getAllConstituencyWithPagination(
     limit,
     page,
     provinceId,
-  );
-  return pageEvents;
+  )
+  return pageEvents
+}
+
+export async function toggleConstituencyService(id: number) {
+  const result = await toggleConstituencyStatus(id)
+  if (!result) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'Constituency not found',
+    }
+  }
+  return { ok: true as const, status: 200, data: result }
+}
+
+export async function closeAllConstituenciesService() {
+  const result = await closeAllConstituencies()
+  return { ok: true as const, status: 200, data: result }
+}
+
+export async function openAllConstituenciesService() {
+  const result = await openAllConstituencies()
+  return { ok: true as const, status: 200, data: result }
 }

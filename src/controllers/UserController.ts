@@ -17,6 +17,9 @@ export async function getAllUsersController(req: Request, res: Response) {
   try {
     const intPage = req.query.page ? parseInt(req.query.page as string) : 1
     const intLimit = req.query.limit ? parseInt(req.query.limit as string) : 10
+    const provinceId = req.query.provinceId
+      ? parseInt(req.query.provinceId as string)
+      : undefined
 
     if (Number.isNaN(intPage) || intPage < 1) {
       return res.status(400).json({
@@ -37,6 +40,7 @@ export async function getAllUsersController(req: Request, res: Response) {
         typeof req.query.search === 'string' ? req.query.search : undefined,
       sortBy: (req.query.sortBy as any) || 'id',
       order: (req.query.order as any) || 'desc',
+      provinceId,
     }
 
     const result = await getAllUsersService(usersQueryDto)

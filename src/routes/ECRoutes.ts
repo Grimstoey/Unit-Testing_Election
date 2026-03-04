@@ -1,11 +1,3 @@
-import { getAllConstituencyWithPaginationController } from '@/controllers/ConstituencyController'
-import {
-  createPartyController,
-  deletePartyController,
-  editPartyController,
-  findPartyByIdController,
-  getAllPartyWithPaginationController,
-} from '@/controllers/PartyController'
 import { requireAuth } from '@/middlewares/AuthMiddleware'
 import { requireRole } from '@/middlewares/RoleMiddleware'
 import { RoleName } from '@/models/role/roleNameDto'
@@ -15,7 +7,20 @@ import {
   deleteCandidateController,
   getAllCandidatesController,
   updateCandidateController,
-} from '../controllers/CandidateController'
+} from '@/controllers/CandidateController'
+import {
+  closeAllConstituenciesController,
+  getAllConstituencyWithPaginationController,
+  openAllConstituenciesController,
+  toggleConstituencyController,
+} from '@/controllers/ConstituencyController'
+import {
+  createPartyController,
+  deletePartyController,
+  editPartyController,
+  findPartyByIdController,
+  getAllPartyWithPaginationController,
+} from '@/controllers/PartyController'
 
 const router = Router()
 
@@ -90,6 +95,27 @@ router.get(
   requireAuth,
   requireRole(RoleName.EC),
   getAllConstituencyWithPaginationController,
+)
+
+router.post(
+  '/constituencies/close-all',
+  requireAuth,
+  requireRole(RoleName.EC),
+  closeAllConstituenciesController,
+)
+
+router.post(
+  '/constituencies/open-all',
+  requireAuth,
+  requireRole(RoleName.EC),
+  openAllConstituenciesController,
+)
+
+router.post(
+  '/constituencies/:id/toggle',
+  requireAuth,
+  requireRole(RoleName.EC),
+  toggleConstituencyController,
 )
 
 export default router
