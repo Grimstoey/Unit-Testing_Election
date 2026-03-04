@@ -90,3 +90,27 @@ export async function findConstituencyByIdRepository(constituencyId: number) {
     where: { id: constituencyId },
   })
 }
+
+// Toggle isClosed ของเขตเดียว
+export async function toggleConstituencyStatus(id: number) {
+  const current = await prisma.constituency.findUnique({ where: { id } })
+  if (!current) return null
+  return prisma.constituency.update({
+    where: { id },
+    data: { isClosed: !current.isClosed },
+  })
+}
+
+// ปิดหีบทั้งหมด
+export async function closeAllConstituencies() {
+  return prisma.constituency.updateMany({
+    data: { isClosed: true },
+  })
+}
+
+// เปิดหีบทั้งหมด
+export async function openAllConstituencies() {
+  return prisma.constituency.updateMany({
+    data: { isClosed: false },
+  })
+}
