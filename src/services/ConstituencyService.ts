@@ -4,7 +4,7 @@ import {
   deleteConstituency,
   editConstituency,
   getAllConstituencies,
-  getAllEventsWithProvincePagination,
+  getConstituenciesWithProvincePagination,
   getAvailableDistrictByProvinceId,
   getConstituencyById,
   openAllConstituencies,
@@ -56,16 +56,15 @@ export async function editConstituencyService(
   number: number,
   provinceId: number,
   isClosed: boolean,
+  districtIds?: number[],
 ) {
-  const result = await editConstituency(id, number, provinceId, isClosed)
-
-  if (!result) {
-    return {
-      ok: false as const,
-      status: 404,
-      message: 'Constituency not found',
-    }
-  }
+  const result = await editConstituency(
+    id,
+    number,
+    provinceId,
+    isClosed,
+    districtIds,
+  )
 
   return {
     ok: true as const,
@@ -82,7 +81,7 @@ export async function getAllConstituencyWithPagination(
   page: number,
   provinceId: number,
 ) {
-  const pageEvents = await getAllEventsWithProvincePagination(
+  const pageEvents = await getConstituenciesWithProvincePagination(
     limit,
     page,
     provinceId,
