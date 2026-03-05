@@ -1,52 +1,56 @@
 export type UserRoleDto = {
   role: {
-    id: number;
-    name: string;
-  };
-};
+    id: number
+    name: string
+  }
+}
 
 export type ProvinceDto = {
-  id: number;
-  name: string;
-};
+  id: number
+  name: string
+}
 
 export type DistrictDto = {
-  id: number;
-  name: string;
-  provinceId: number;
-};
+  id: number
+  name: string
+  provinceId: number
+}
 
 export type ConstituencyDto = {
-  id: number;
-  number: number;
-  provinceId: number;
-  isClosed: boolean;
-};
+  id: number
+  number: number
+  provinceId: number
+  isClosed: boolean
+}
 
 export type VoteDto = {
-  id: number;
-  candidateId: number;
-  constituencyId: number;
-  createdAt: Date;
-};
+  id: number
+  createdAt: Date
+  candidateId: number
+  candidateNumber: number
+  constituencyId: number
+  constituencyNumber: number
+}
 
 export type UserWithRelationsDto = {
-  id: number;
-  citizenId: string;
-  firstName: string;
-  lastName: string;
-  address: string;
+  id: number
+  citizenId: string
+  firstName: string
+  lastName: string
+  address: string
 
-  provinceId: number;
-  districtId: number;
-  constituencyId: number | null;
+  provinceId: number
+  districtId: number
 
-  createdAt: Date;
+  createdAt: Date
 
-  province: ProvinceDto;
-  district: DistrictDto;
-  constituency: ConstituencyDto | null;
+  province: ProvinceDto
 
-  roles: UserRoleDto[];
-  vote: VoteDto | null;
-};
+  district: {
+    id: number
+    name: string
+  }
+  constituency: ConstituencyDto
+  roles: UserRoleDto[]
+  vote: VoteDto | null
+}

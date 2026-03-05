@@ -3,7 +3,7 @@ import {
   getAllPartyWithPaginationService,
   createPartyService,
   deletePartyService,
-  editPartyService,
+  updatePartyService,
   findPartyByIdService,
 } from '@/services/PartyService'
 import type { Request, Response } from 'express'
@@ -20,7 +20,14 @@ export async function findAllPartyController(req: Request, res: Response) {
 
 export async function createPartyController(req: Request, res: Response) {
   const { name, logoUrl, policy } = req.body
-  const result = await createPartyService(name, logoUrl, policy)
+
+  const user = req.body.user
+
+  if (!user) {
+    return res.status(401).json({ message: 'Unauthorized' })
+  }
+
+  const result = await createPartyService(name, logoUrl, policy, user.id)
 
   if (!result) {
     return res.status(400).json({
@@ -30,7 +37,7 @@ export async function createPartyController(req: Request, res: Response) {
     })
   }
 
-  return res.status(200).json(result)
+  return res.status(result.status).json(result)
 }
 
 export async function deletePartyController(req: Request, res: Response) {
@@ -45,17 +52,24 @@ export async function deletePartyController(req: Request, res: Response) {
     })
   }
 
-  return res.status(200).json(result)
+  return res.status(result.status).json(result)
 }
 
-export async function editPartyController(req: Request, res: Response) {
+export async function updatePartyController(req: Request, res: Response) {
   const id = req.params.id
   const updatedEvent = req.body
-  const result = await editPartyService(
+
+  const user = req.body.user
+  if (!user) {
+    return res.status(401).json({ message: 'Unauthorized' })
+  }
+
+  const result = await updatePartyService(
     Number(id),
     updatedEvent.name,
     updatedEvent.logoUrl,
     updatedEvent.policy,
+    user.id
   )
 
   if (!result) {

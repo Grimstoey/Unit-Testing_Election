@@ -8,6 +8,7 @@ import {
   getMyVoteRepository,
   getConstituencyRepository,
 } from '@/repositories/VoterRepository'
+import { findByUserIdRepository } from '../repositories/UserRepository'
 
 // ดึงข้อมูลผู้สมัครในเขต
 export const getCandidatesService = async (constituencyId: number) => {
@@ -75,14 +76,30 @@ const validateVote = async (vote: VoteDto) => {
     }
   }
 
-  const constituencyId = Number(vote?.constituencyId)
-  const candidateId = Number(vote?.candidateId)
+  const user = await findByUserIdRepository(vote.userId)
+  if (!user || !user.constituencyId) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'User constituency not found',
+    }
+  }
+
+  const constituencyId = user.constituencyId
+  const candidateId = vote.candidateId
 
   // 1. เช็คว่าเขตปิดยัง
-  const isClosed = (
-    (await getConstituencyRepository(constituencyId)) as constituency
-  )?.isClosed
-  if (isClosed) {
+  const constituency = await getConstituencyRepository(constituencyId)
+
+  if (!constituency) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'Constituency not found',
+    }
+  }
+
+  if (constituency.isClosed) {
     return {
       ok: false as const,
       status: 400,

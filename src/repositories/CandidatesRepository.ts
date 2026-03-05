@@ -42,7 +42,9 @@ export async function findCandidateByCitizenIdRepository(citizenId: string) {
   })
 }
 
-//เรียก candidate ทั้งหมด
+// =========================================
+//          เรียก candidate ทั้งหมด
+// =========================================
 export async function findAllCandidatesRepository(
   where: any,
   skip: number,
@@ -54,8 +56,7 @@ export async function findAllCandidatesRepository(
     where: where || {},
     skip: skip || 0,
     take: take || 10,
-    orderBy: orderBy || { id: 'asc' },
-
+    orderBy: orderBy || { updatedAt: 'desc' },
     select: {
       id: true,
       citizenId: true,
@@ -86,6 +87,8 @@ export async function findAllCandidatesRepository(
           },
         },
       },
+      updatedAt: true,
+      createdAt: true,
     },
   })
 }

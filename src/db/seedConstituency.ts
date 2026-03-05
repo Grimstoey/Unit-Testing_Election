@@ -1,11 +1,5 @@
 import { prisma } from "../lib/prisma"
 
-/*
- * จำนวนเขตเลือกตั้งต่อจังหวัด
- * ต้องตรงกับ DISTRICT_IN_CONSTITUENCY_MAP 
- * obj ใน [ seedDistrictInConstituency.ts ]
- */
-
 const CONSTITUENCY_COUNT_MAP: Record<string, number> = {
   กรุงเทพมหานคร: 8,
   เชียงใหม่: 4,
@@ -17,19 +11,26 @@ const CONSTITUENCY_COUNT_MAP: Record<string, number> = {
 }
 
 export async function seedConstituency() {
+  console.log("🧹 Cleaning old constituencies...")
+
+  // ลบก่อนกัน unique ชน
+  await prisma.constituency.deleteMany({})
+
   const provinces = await prisma.province.findMany()
 
-  if (provinces.length === 0) {
-    throw new Error("No provinces found.")
+  if (!provinces.length) {
+    throw new Error("❌ No provinces found.")
   }
 
-  const constituencyToCreate: {
+  const dataToCreate: {
     number: number
     provinceId: number
+    isClosed: boolean
   }[] = []
 
   for (const province of provinces) {
-    const constituencyCount = CONSTITUENCY_COUNT_MAP[province.name]
+    const constituencyCount =
+      CONSTITUENCY_COUNT_MAP[province.name]
 
     if (!constituencyCount) {
       console.warn(
@@ -39,16 +40,16 @@ export async function seedConstituency() {
     }
 
     for (let i = 1; i <= constituencyCount; i++) {
-      constituencyToCreate.push({
+      dataToCreate.push({
         number: i,
         provinceId: province.id,
+        isClosed: false, // ใส่ explicit ชัดเจน
       })
     }
   }
 
   await prisma.constituency.createMany({
-    data: constituencyToCreate,
-    skipDuplicates: true,
+    data: dataToCreate,
   })
 
   console.log("--->>> Seeded constituencies completed!")

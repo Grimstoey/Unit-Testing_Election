@@ -66,6 +66,12 @@ export async function getAllEventsWithProvincePagination(
       id: true,
       number: true,
       provinceId: true,
+      districts: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       isClosed: true,
       province: {
         select: {

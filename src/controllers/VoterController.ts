@@ -34,12 +34,10 @@ export async function getConstituencyController(req: Request, res: Response) {
 export async function createVoteController(req: Request, res: Response) {
   const { user } = req.body
   const userId = user?.id
-  const { constituency } = user
   const { candidateId } = req.body
 
   const result = await createVoteService({
     userId: Number(userId),
-    constituencyId: Number(constituency.id),
     candidateId: Number(candidateId),
   })
 
@@ -57,12 +55,18 @@ export async function createVoteController(req: Request, res: Response) {
 export async function updateVoteController(req: Request, res: Response) {
   const { user } = req.body
   const userId = user?.id
-  const { constituency } = user
   const { candidateId } = req.body
+
+  if (!userId || !candidateId) {
+    return res.status(400).json({
+      ok: false,
+      status: 400,
+      message: 'Missing userId or candidateId',
+    })
+  }
 
   const result = await updateVoteService({
     userId: Number(userId),
-    constituencyId: Number(constituency.id),
     candidateId: Number(candidateId),
   })
 
