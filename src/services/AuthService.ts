@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { LoginUserInput } from "../models/user/loginUserDto";
 import { RegisterUserInput } from "../models/user/registerUserDto";
 import { findRoleByName } from "../repositories/RoleRepository";
-import { createUser, findByCitizenId } from "../repositories/UserRepository";
+import { createUserRepository, findByCitizenIdRepository } from "../repositories/UserRepository";
 import { signAccessToken, verifyAccessToken } from "../utils/jwt";
 import { findByUserIdService } from "./UserService";
 import { RoleName } from "@/models/role/roleNameDto";
@@ -18,8 +18,38 @@ export async function registerService(regisInput: RegisterUserInput) {
     districtId,
   } = regisInput;
 
-  // เช็ค citizenId ซ้ำ
-  const userExists = await findByCitizenId(citizenId);
+  if (citizenId.length !== 13) {
+    return {
+      ok: false as const,
+      status: 400,
+      message: "The national identification number must have 13 digits.",
+    };
+  }
+
+  if (!/^\d{13}$/.test(citizenId)) {
+    return {
+      ok: false as const,
+      status: 400,
+      message: "Citizen ID must contain exactly 13 digits",
+    };
+  }
+  //ต้องเป็นตัวเลขล้วน 13 ตัว และไม่มีอย่างอื่นเลย 
+  // / ... / --> Regular Expression (Regex)
+  // \d --> ตัวเลข 0–9
+  // {13} --> ต้องมีจำนวน 13 ตัวพอดี
+  // ^ --> ต้องเริ่มต้นจากตัวแรกของข้อความ
+  // $ --> ต้องจบตรงนี้พอดี
+
+
+  if (typeof provinceId !== "number" || Number.isNaN(provinceId)) {
+    return {
+      ok: false as const,
+      status: 400,
+      message: "provinceId must be a valid number",
+    };
+  }
+
+  const userExists = await findByCitizenIdRepository(citizenId);
   if (userExists) {
     return {
       ok: false as const,
@@ -28,7 +58,6 @@ export async function registerService(regisInput: RegisterUserInput) {
     };
   }
 
-  // default role = ROLE_VOTER
   const role = await findRoleByName(RoleName.VOTER);
   if (!role) {
     return {
@@ -38,32 +67,51 @@ export async function registerService(regisInput: RegisterUserInput) {
     };
   }
 
-  // hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // create user
-  const user = await createUser({
-    citizenId,
-    hashedPassword,
-    firstName,
-    lastName,
-    address,
-    provinceId,
-    districtId,
-    roleId: role.id,
-  });
+  try {
+    const user = await createUserRepository({
+      citizenId,
+      hashedPassword,
+      firstName,
+      lastName,
+      address,
+      provinceId,
+      districtId,
+      roleId: role.id,
+    });
 
-  return {
-    ok: true as const,
-    data: user,
-  };
+    return {
+      ok: true as const,
+      data: user,
+    };
+  } catch (err: any) {
+    // ดัก error จาก repository ตรงนี้เลย
+
+    if (err.message === "District not found") {
+      return {
+        ok: false as const,
+        status: 404,
+        message: err.message,
+      };
+    }
+
+    if (err.message === "District does not belong to selected province") {
+      return {
+        ok: false as const,
+        status: 400,
+        message: err.message,
+      };
+    }
+
+  }
 }
 
 export async function loginService(loginInput: LoginUserInput) {
   const { citizenId, password } = loginInput;
 
   // หา user
-  const user = await findByCitizenId(citizenId);
+  const user = await findByCitizenIdRepository(citizenId);
   if (!user) {
     return {
       ok: false as const,

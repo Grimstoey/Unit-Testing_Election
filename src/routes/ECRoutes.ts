@@ -17,7 +17,7 @@ import {
 import {
   createPartyController,
   deletePartyController,
-  editPartyController,
+  updatePartyController,
   findPartyByIdController,
   getAllPartyWithPaginationController,
 } from '@/controllers/PartyController'
@@ -53,7 +53,7 @@ router.put(
   '/parties/:id',
   requireAuth,
   requireRole(RoleName.EC),
-  editPartyController,
+  updatePartyController,
 )
 
 //==================================

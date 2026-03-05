@@ -1,9 +1,9 @@
 import {
   getAllParty,
   getAllPartyWithPagination,
-  addParty,
+  createParty,
   deleteParty,
-  editParty,
+  updateParty,
   getPartyById,
 } from '@/repositories/PartyRepository'
 
@@ -28,8 +28,9 @@ export const createPartyService = async (
   name: string,
   logoUrl: string,
   policy: string,
+  userId: number
 ) => {
-  const result = await addParty(name, logoUrl, policy)
+  const result = await createParty(name, logoUrl, policy, userId)
 
   return {
     ok: true as const,
@@ -39,6 +40,17 @@ export const createPartyService = async (
 }
 
 export async function deletePartyService(id: number) {
+
+  const existingParty = await getPartyById(id);
+
+  if (!existingParty) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'Party not found',
+    }
+  }
+
   const result = await deleteParty(id)
 
   return {
@@ -48,21 +60,24 @@ export async function deletePartyService(id: number) {
   }
 }
 
-export async function editPartyService(
+export async function updatePartyService(
   id: number,
   name: string,
   logoUrl: string,
   policy: string,
+  userId: number
 ) {
-  const result = await editParty(id, name, logoUrl, policy)
+  const existing = await getPartyById(id)
 
-  if (!result) {
+  if (!existing) {
     return {
       ok: false as const,
       status: 404,
-      message: 'Parties not found',
+      message: 'Party not found',
     }
   }
+
+  const result = await updateParty(id, name, logoUrl, policy, userId)
 
   return {
     ok: true as const,

@@ -3,16 +3,22 @@ import { prisma } from '../lib/prisma'
 export async function getAllParty() {
   return prisma.party.findMany()
 }
-export async function addParty(name: string, logoUrl: string, policy: string) {
+
+
+export async function createParty(name: string, logoUrl: string, policy: string, userId: number) {
   const result = await prisma.party.create({
     data: {
       name: name,
       logoUrl: logoUrl,
       policy: policy,
+      createdBy: userId,
+      updatedBy: userId,
     },
   })
   return result
 }
+
+
 export async function getPartyById(id: number) {
   return prisma.party.findUnique({
     where: { id },
@@ -31,11 +37,12 @@ export async function deleteParty(id: number) {
   return result
 }
 
-export async function editParty(
+export async function updateParty(
   id: number,
   name: string,
   logoUrl: string,
   policy: string,
+  userId: number
 ) {
   const result = await prisma.party.update({
     where: { id },
@@ -43,10 +50,13 @@ export async function editParty(
       name: name,
       logoUrl: logoUrl,
       policy: policy,
+      updatedBy: userId
     },
   })
   return result
 }
+
+
 export async function getAllPartyWithPagination(limit: number, page: number) {
   const total = await prisma.party.count()
   const result = await prisma.party.findMany({
@@ -57,6 +67,10 @@ export async function getAllPartyWithPagination(limit: number, page: number) {
       name: true,
       logoUrl: true,
       policy: true,
+      createdBy: true,
+      updatedBy: true,
+      createdAt: true,
+      updatedAt: true,
     },
   })
   return {

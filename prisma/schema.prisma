@@ -26,9 +26,7 @@ model user {
   roles userRole[]
   vote  vote?
 
-  createdAt      DateTime      @default(now())
-  constituency   constituency? @relation(fields: [constituencyId], references: [id])
-  constituencyId Int?
+  createdAt DateTime @default(now())
   //เขตถูกคำนวณตอน runtime เท่านั้น
 
   @@index([provinceId, districtId])
@@ -64,13 +62,13 @@ model province {
 
 // อำเภอ
 model district {
-  id         Int    @id @default(autoincrement())
-  name       String
-  provinceId Int
+  id             Int    @id @default(autoincrement())
+  name           String
+  provinceId     Int
+  constituencyId Int
 
-  province province @relation(fields: [provinceId], references: [id])
-
-  districtMappings districtInConstituency[]
+  province     province     @relation(fields: [provinceId], references: [id])
+  constituency constituency @relation(fields: [constituencyId], references: [id])
 
   users user[]
 
@@ -80,32 +78,16 @@ model district {
 // ================= Constituency =================
 // เขตเลือกตั้ง
 model constituency {
-  id         Int @id @default(autoincrement())
-  number     Int // เขตที่ 1, 2, 3
+  id         Int     @id @default(autoincrement())
+  number     Int
   provinceId Int
+  isClosed   Boolean @default(false)
 
-  province province @relation(fields: [provinceId], references: [id])
-
-  districtInConstituencies districtInConstituency[]
-  candidates               candidate[]
-
-  isClosed Boolean @default(false)
-  users    user[]
-  votes    vote[]
+  province   province    @relation(fields: [provinceId], references: [id])
+  districts  district[]
+  candidates candidate[]
 
   @@unique([provinceId, number])
-}
-
-// ================= Constituency + district =================
-// อำเภอในเขตเลือกตั้ง เช่น อำเภอ A อยู่เขต 1
-model districtInConstituency {
-  districtId     Int
-  constituencyId Int
-
-  district     district     @relation(fields: [districtId], references: [id])
-  constituency constituency @relation(fields: [constituencyId], references: [id])
-
-  @@id([districtId, constituencyId])
 }
 
 // ================= Party =================
@@ -114,6 +96,12 @@ model party {
   name    String @unique
   logoUrl String
   policy  String
+
+  createdBy Int
+  updatedBy Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   candidates candidate[]
 }
@@ -142,21 +130,19 @@ model candidate {
 
   votes vote[]
 
-  @@unique([number, constituencyId])
-  @@unique([partyId, constituencyId])
+  @@unique([number, constituencyId]) // เบอร์ห้ามซ้ำในเขต
+  @@unique([partyId, constituencyId]) // พรรคส่งได้ 1 คนต่อเขต
 }
 
 // ================= Vote =================
 model vote {
-  id             Int @id @default(autoincrement())
-  userId         Int @unique
-  candidateId    Int
-  constituencyId Int
+  id          Int @id @default(autoincrement())
+  userId      Int @unique
+  candidateId Int
 
-  user         user         @relation(fields: [userId], references: [id])
-  candidate    candidate    @relation(fields: [candidateId], references: [id])
-  constituency constituency @relation(fields: [constituencyId], references: [id])
+  user      user      @relation(fields: [userId], references: [id])
+  candidate candidate @relation(fields: [candidateId], references: [id])
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime @updatedAt
 }

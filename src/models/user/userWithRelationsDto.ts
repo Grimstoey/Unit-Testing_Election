@@ -24,11 +24,13 @@ export type ConstituencyDto = {
 };
 
 export type VoteDto = {
-  id: number;
-  candidateId: number;
-  constituencyId: number;
-  createdAt: Date;
-};
+  id: number
+  createdAt: Date
+  candidateId: number
+  candidateNumber: number
+  constituencyId: number
+  constituencyNumber: number
+}
 
 export type UserWithRelationsDto = {
   id: number;
@@ -39,14 +41,16 @@ export type UserWithRelationsDto = {
 
   provinceId: number;
   districtId: number;
-  constituencyId: number | null;
 
   createdAt: Date;
 
   province: ProvinceDto;
-  district: DistrictDto;
-  constituency: ConstituencyDto | null;
 
+  district: {
+    id: number;
+    name: string;
+    constituency: ConstituencyDto;
+  };
   roles: UserRoleDto[];
   vote: VoteDto | null;
 };

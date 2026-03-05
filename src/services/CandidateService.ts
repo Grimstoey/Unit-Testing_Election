@@ -130,7 +130,7 @@ export async function createCandidateService(input: CreateCandidateDto, userId: 
 
     // ตรวจสอบ constituency
     const existingConstituency = await findConstituencyByIdRepository(input.constituencyId);
-    if (!existingConstituency || undefined) throw new Error("Constituency not found");
+    if (!existingConstituency) throw new Error("Constituency not found");
 
     // ตรวจสอบหมายเลขซ้ำในเขต
     const duplicateNum = await findCandidateByNumberAndConstituencyIdRepository(input.number, input.constituencyId);
