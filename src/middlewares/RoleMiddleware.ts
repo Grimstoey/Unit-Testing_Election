@@ -10,9 +10,7 @@ export function requireRole(role: string) {
       })
     }
 
-    const hasRole = user.roles.some(
-      (r: any) => r.role?.name === role
-    )
+    const hasRole = user.roles.some((r: string) => r === role)
 
     if (!hasRole) {
       return res.status(403).json({
