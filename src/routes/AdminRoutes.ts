@@ -5,6 +5,7 @@ import {
   deleteConstituencyController,
   editConstituencyController,
   getAllConstituencyWithPaginationController,
+  getAvailableDistrictByProvinceIdController,
 } from '@/controllers/ConstituencyController'
 import {
   getAllUsersController,
@@ -41,6 +42,13 @@ router.put(
   requireAuth,
   requireRole(RoleName.ADMIN),
   editConstituencyController,
+)
+
+router.get(
+  '/constituencies/:provinceId/available-districts',
+  requireAuth,
+  requireRole(RoleName.ADMIN),
+  getAvailableDistrictByProvinceIdController,
 )
 
 router.get(

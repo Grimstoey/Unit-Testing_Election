@@ -20,14 +20,37 @@ export async function getConstituencyById(id: number) {
     },
   })
 }
-export async function addConstituency(number: number, provinceId: number) {
-  const result = await prisma.constituency.create({
-    data: {
-      number: number,
-      provinceId: provinceId,
-    },
+export async function addConstituency(
+  number: number,
+  provinceId: number,
+  districtIds?: number[],
+) {
+  return prisma.$transaction(async (tx) => {
+    // สร้าง constituency ใหม่
+    const constituency = await tx.constituency.create({
+      data: {
+        number: number,
+        provinceId: provinceId,
+      },
+    })
+
+    // ถ้ามี districtIds ให้ assign อำเภอเข้ากับ constituency นี้
+    if (districtIds && districtIds.length > 0) {
+      await tx.district.updateMany({
+        where: {
+          id: { in: districtIds },
+          provinceId: provinceId, // ป้องกัน assign อำเภอข้ามจังหวัด
+        },
+        data: { constituencyId: constituency.id },
+      })
+    }
+
+    // ดึงข้อมูลพร้อม districts กลับมา
+    return tx.constituency.findUnique({
+      where: { id: constituency.id },
+      include: { districts: true },
+    })
   })
-  return result
 }
 export async function deleteConstituency(id: number) {
   const result = await prisma.constituency.delete({
@@ -118,5 +141,11 @@ export async function closeAllConstituencies() {
 export async function openAllConstituencies() {
   return prisma.constituency.updateMany({
     data: { isClosed: false },
+  })
+}
+
+export async function getAvailableDistrictByProvinceId(provinceId: number) {
+  return prisma.district.findMany({
+    where: { provinceId, constituencyId: null },
   })
 }

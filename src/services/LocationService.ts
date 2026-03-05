@@ -51,8 +51,7 @@ export async function getConstituenciesByDistrictIdService(districtId: number) {
     }
   }
 
-  // Extract constituency from districtMappings
-  const constituency = result.districtMappings[0]?.constituency
+  const constituency = result.constituency
 
   if (!constituency) {
     return {

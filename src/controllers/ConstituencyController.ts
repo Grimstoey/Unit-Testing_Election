@@ -5,6 +5,7 @@ import {
   editConstituencyService,
   findAllConstituenciesService,
   getAllConstituencyWithPagination,
+  getAvailableDistrictByProvinceIdService,
   openAllConstituenciesService,
   toggleConstituencyService,
 } from '@/services/ConstituencyService'
@@ -27,8 +28,12 @@ export async function createConstituencyController(
   req: Request,
   res: Response,
 ) {
-  const { number, provinceId } = req.body
-  const result = await createConstituencyService(number, provinceId)
+  const { number, provinceId, districtIds } = req.body
+  const result = await createConstituencyService(
+    number,
+    provinceId,
+    districtIds,
+  )
 
   if (!result) {
     return res.status(400).json({
@@ -162,4 +167,21 @@ export async function openAllConstituenciesController(
     status: 200,
     message: 'Open all constituencies successfully',
   })
+}
+
+export async function getAvailableDistrictByProvinceIdController(
+  req: Request,
+  res: Response,
+) {
+  const provinceId = Number(req.params.provinceId)
+  if (Number.isNaN(provinceId)) {
+    return res.status(400).json({
+      message: 'Invalid provinceId. provinceId must be a number',
+    })
+  }
+  const result = await getAvailableDistrictByProvinceIdService(provinceId)
+  if (!result.ok) {
+    return res.status(result.status).json({ message: result.message })
+  }
+  return res.status(200).json(result)
 }
