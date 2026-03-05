@@ -144,9 +144,16 @@ export async function createCandidateService(
     input.constituencyId,
   )
   if (duplicateNum) {
-    throw new Error(
-      'The candidate numbers are duplicated in this constituency.',
-    )
+    throw new Error('มีผู้สมัครหมายเลขนี้ในเขตเลือกตั้งนี้แล้ว')
+  }
+
+  // ตรวจสอบพรรคซ้ำในเขต
+  const duplicateParty = await findCandidateByPartyAndConstituencyRepository(
+    input.partyId,
+    input.constituencyId,
+  )
+  if (duplicateParty) {
+    throw new Error('พรรคการเมืองนี้มีผู้สมัครในเขตนี้แล้ว')
   }
 
   // ถ้าไม่มี policy ใช้ policy พรรค
