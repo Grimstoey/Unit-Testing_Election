@@ -1,4 +1,3 @@
-import { constituency } from '@/generated/prisma/client'
 import { VoteDto } from '@/models/vote/voteDto'
 import {
   getCandidatesRepository,
@@ -77,7 +76,7 @@ const validateVote = async (vote: VoteDto) => {
   }
 
   const user = await findByUserIdRepository(vote.userId)
-  if (!user || !user.constituencyId) {
+  if (!user || !user.district?.constituency) {
     return {
       ok: false as const,
       status: 404,
@@ -85,7 +84,7 @@ const validateVote = async (vote: VoteDto) => {
     }
   }
 
-  const constituencyId = user.constituencyId
+  const constituencyId = user.district.constituency.id
   const candidateId = vote.candidateId
 
   // 1. เช็คว่าเขตปิดยัง

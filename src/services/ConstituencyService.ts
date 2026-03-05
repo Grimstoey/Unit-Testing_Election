@@ -5,6 +5,7 @@ import {
   editConstituency,
   getAllConstituencies,
   getAllEventsWithProvincePagination,
+  getAvailableDistrictByProvinceId,
   getConstituencyById,
   openAllConstituencies,
   toggleConstituencyStatus,
@@ -31,8 +32,9 @@ export async function findAllConstituenciesService() {
 export const createConstituencyService = async (
   number: number,
   provinceId: number,
+  districtIds?: number[],
 ) => {
-  const result = await addConstituency(number, provinceId)
+  const result = await addConstituency(number, provinceId, districtIds)
 
   return {
     ok: true as const,
@@ -107,5 +109,19 @@ export async function closeAllConstituenciesService() {
 
 export async function openAllConstituenciesService() {
   const result = await openAllConstituencies()
+  return { ok: true as const, status: 200, data: result }
+}
+
+export async function getAvailableDistrictByProvinceIdService(
+  provinceId: number,
+) {
+  const result = await getAvailableDistrictByProvinceId(provinceId)
+  if (!result) {
+    return {
+      ok: false as const,
+      status: 404,
+      message: 'District not found',
+    }
+  }
   return { ok: true as const, status: 200, data: result }
 }

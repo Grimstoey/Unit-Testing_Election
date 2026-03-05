@@ -50,7 +50,7 @@ export type UserWithRelationsDto = {
     id: number
     name: string
   }
-  constituency: ConstituencyDto
+  constituency: ConstituencyDto | null
   roles: UserRoleDto[]
   vote: VoteDto | null
 }

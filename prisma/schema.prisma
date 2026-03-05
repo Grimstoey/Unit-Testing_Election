@@ -65,10 +65,10 @@ model district {
   id             Int    @id @default(autoincrement())
   name           String
   provinceId     Int
-  constituencyId Int
+  constituencyId Int?
 
-  province     province     @relation(fields: [provinceId], references: [id])
-  constituency constituency @relation(fields: [constituencyId], references: [id])
+  province     province      @relation(fields: [provinceId], references: [id])
+  constituency constituency? @relation(fields: [constituencyId], references: [id])
 
   users user[]
 

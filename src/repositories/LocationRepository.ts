@@ -15,11 +15,7 @@ export async function getConstituenciesByDistrictId(districtId: number) {
   return prisma.district.findUnique({
     where: { id: districtId },
     include: {
-      districtMappings: {
-        include: {
-          constituency: true,
-        },
-      },
+      constituency: true,
     },
   })
 }
