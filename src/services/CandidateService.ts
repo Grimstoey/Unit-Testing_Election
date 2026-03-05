@@ -144,7 +144,7 @@ export async function createCandidateService(
     input.constituencyId,
   )
   if (duplicateNum) {
-    throw new Error('มีผู้สมัครหมายเลขนี้ในเขตเลือกตั้งนี้แล้ว')
+    throw new Error('Candidate number already exists in this constituency')
   }
 
   // ตรวจสอบพรรคซ้ำในเขต
@@ -153,7 +153,7 @@ export async function createCandidateService(
     input.constituencyId,
   )
   if (duplicateParty) {
-    throw new Error('พรรคการเมืองนี้มีผู้สมัครในเขตนี้แล้ว')
+    throw new Error('Party already has a candidate in this constituency')
   }
 
   // ถ้าไม่มี policy ใช้ policy พรรค
