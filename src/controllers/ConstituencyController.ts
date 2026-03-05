@@ -51,15 +51,13 @@ export async function deleteConstituencyController(
   res: Response,
 ) {
   const id = req.params.id
-  // Implement delete logic here
-  console.log(`Deleting constituency with id: ${id}`)
   const result = await deleteConstituencyService(Number(id))
 
-  if (!result) {
-    return res.status(400).json({
+  if (!result.ok) {
+    return res.status(result.status).json({
       ok: false as const,
-      status: 400,
-      message: 'Create constituency failed',
+      status: result.status,
+      message: 'Delete constituency failed',
     })
   }
 
@@ -68,20 +66,20 @@ export async function deleteConstituencyController(
 
 export async function editConstituencyController(req: Request, res: Response) {
   const id = req.params.id
-  const updatedEvent = req.body
-  // Implement update logic here
+  const { number, provinceId, isClosed, districtIds } = req.body
   const result = await editConstituencyService(
     Number(id),
-    updatedEvent.number,
-    updatedEvent.provinceId,
-    updatedEvent.isClosed,
+    number,
+    provinceId,
+    isClosed,
+    districtIds,
   )
 
-  if (!result) {
-    return res.status(400).json({
+  if (!result.ok) {
+    return res.status(result.status).json({
       ok: false as const,
-      status: 400,
-      message: 'Create constituency failed',
+      status: result.status,
+      message: 'Update constituency failed',
     })
   }
 

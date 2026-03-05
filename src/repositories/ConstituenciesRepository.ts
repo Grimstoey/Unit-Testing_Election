@@ -17,6 +17,7 @@ export async function getConstituencyById(id: number) {
           name: true,
         },
       },
+      candidates: true,
     },
   })
 }
@@ -34,18 +35,17 @@ export async function addConstituency(
       },
     })
 
-    // ถ้ามี districtIds ให้ assign อำเภอเข้ากับ constituency นี้
+    // ถ้ามี districtIds ให้ assign อำเภอเข้ากับ constituency
     if (districtIds && districtIds.length > 0) {
       await tx.district.updateMany({
         where: {
           id: { in: districtIds },
-          provinceId: provinceId, // ป้องกัน assign อำเภอข้ามจังหวัด
+          provinceId: provinceId,
         },
         data: { constituencyId: constituency.id },
       })
     }
 
-    // ดึงข้อมูลพร้อม districts กลับมา
     return tx.constituency.findUnique({
       where: { id: constituency.id },
       include: { districts: true },
@@ -63,18 +63,44 @@ export async function editConstituency(
   number: number,
   provinceId: number,
   isClosed: boolean,
+  districtIds?: number[],
 ) {
-  const result = await prisma.constituency.update({
-    where: { id },
-    data: {
-      number: number,
-      provinceId: provinceId,
-      isClosed: isClosed,
-    },
+  return prisma.$transaction(async (tx) => {
+    // update constituency
+    const constituency = await tx.constituency.update({
+      where: { id },
+      data: { number, provinceId, isClosed },
+    })
+
+    if (districtIds !== undefined) {
+      // ลบอำเภอเดิมที่ไม่อยู่ใน list ใหม่
+      await tx.district.updateMany({
+        where: {
+          constituencyId: id,
+          id: { notIn: districtIds },
+        },
+        data: { constituencyId: null },
+      })
+
+      // เพิ่มอำเภอใหม่
+      if (districtIds.length > 0) {
+        await tx.district.updateMany({
+          where: {
+            id: { in: districtIds },
+            provinceId: provinceId,
+          },
+          data: { constituencyId: id },
+        })
+      }
+    }
+
+    return tx.constituency.findUnique({
+      where: { id: constituency.id },
+      include: { districts: true },
+    })
   })
-  return result
 }
-export async function getAllEventsWithProvincePagination(
+export async function getConstituenciesWithProvincePagination(
   limit: number,
   page: number,
   provinceId: number,
@@ -85,6 +111,9 @@ export async function getAllEventsWithProvincePagination(
     skip: limit * (page - 1),
     take: limit,
     where,
+    orderBy: {
+      provinceId: 'asc',
+    },
     select: {
       id: true,
       number: true,
@@ -99,6 +128,21 @@ export async function getAllEventsWithProvincePagination(
       province: {
         select: {
           name: true,
+        },
+      },
+      candidates: {
+        select: {
+          id: true,
+          number: true,
+          firstName: true,
+          lastName: true,
+          imageUrl: true,
+          candidatePolicy: true,
+          party: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -143,7 +187,7 @@ export async function openAllConstituencies() {
     data: { isClosed: false },
   })
 }
-
+// ดึงอำเภอที่ยังไม่มีเขต
 export async function getAvailableDistrictByProvinceId(provinceId: number) {
   return prisma.district.findMany({
     where: { provinceId, constituencyId: null },
