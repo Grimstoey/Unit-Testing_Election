@@ -1,16 +1,18 @@
 import { prisma } from '../src/lib/prisma'
 
 import {
-  seedRole,
-  seedProvince,
+  seedCandidate,
   seedConstituency,
   seedDistrict,
   seedParty,
-  seedCandidate,
+  seedProvince,
+  seedRole,
+  seedUser,
+  seedVote,
 } from '../src/db'
 
 async function main() {
-  console.log("🚀 Start seeding...")
+  console.log('🚀 Start seeding...')
 
   await seedRole()
 
@@ -24,7 +26,11 @@ async function main() {
 
   await seedCandidate()
 
-  console.log("✅ Seeding completed successfully")
+  await seedUser()
+
+  await seedVote()
+
+  console.log('✅ Seeding completed successfully')
 }
 
 main()

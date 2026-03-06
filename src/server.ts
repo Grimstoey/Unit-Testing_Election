@@ -1,13 +1,14 @@
 import cors, { CorsOptions } from 'cors'
 import 'dotenv/config'
 import express, { Request, Response } from 'express'
+import { errorHandler } from './middlewares/PrismaErrorHandler'
 import adminRoutes from './routes/AdminRoutes'
 import authRoutes from './routes/AuthRoutes'
-import locationRoutes from './routes/LocationRoutes'
-import voterRoutes from './routes/VoterRoutes'
-import { errorHandler } from './middlewares/PrismaErrorHandler'
 import ecRoutes from './routes/ECRoutes'
+import locationRoutes from './routes/LocationRoutes'
+import publicRoutes from './routes/PublicRoutes'
 import uploadRoutes from './routes/UploadRoutes'
+import voterRoutes from './routes/VoterRoutes'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -42,6 +43,8 @@ app.use('/location', locationRoutes)
 app.use('/voter', voterRoutes)
 
 app.use('/upload', uploadRoutes)
+
+app.use('/public', publicRoutes)
 
 // เอาไว้อันท้ายสุดหลังจากทุกอย่างไหลมาแล้ว ห้ามย้าย!!!!
 app.use(errorHandler)
