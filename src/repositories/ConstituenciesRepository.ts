@@ -193,3 +193,32 @@ export async function getAvailableDistrictByProvinceId(provinceId: number) {
     where: { provinceId, constituencyId: null },
   })
 }
+
+export async function getResultByConstituencieIdRepository(id: number) {
+  return prisma.constituency.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      province: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      candidates: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          candidatePolicy: true,
+          number: true,
+          imageUrl: true,
+          party: {
+            select: { id: true, name: true, logoUrl: true },
+          },
+          _count: { select: { votes: true } },
+        },
+      },
+    },
+  })
+}

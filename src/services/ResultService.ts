@@ -1,22 +1,28 @@
 import { PartyStats } from '@/models/result/resultDto'
 import { prisma } from '../lib/prisma'
+import { getProvincesWithConstituenciesRepository } from '@/repositories/LocationRepository'
+import { getResultByConstituencieIdRepository } from '@/repositories/ConstituenciesRepository'
 
-export const getElectionDashboard = async () => {
-  const [totalVotes, totalUsers, totalConstituencies, closedConstituencies] =
-    await Promise.all([
-      prisma.vote.count(),
-      prisma.user.count({
-        where: { roles: { some: { role: { name: 'ROLE_VOTER' } } } },
-      }),
-      prisma.constituency.count(),
-      prisma.constituency.count({ where: { isClosed: true } }),
-    ])
+const getCountingProgress = async () => {
+  const totalConstituencies = await prisma.constituency.count()
+  const closedConstituencies = await prisma.constituency.count({
+    where: { isClosed: true },
+  })
+  return totalConstituencies > 0
+    ? (closedConstituencies / totalConstituencies) * 100
+    : 0
+}
+
+export const getElectionResult = async () => {
+  const [totalVotes, totalUsers, countingProgress] = await Promise.all([
+    prisma.vote.count(),
+    prisma.user.count({
+      where: { roles: { some: { role: { name: 'ROLE_VOTER' } } } },
+    }),
+    getCountingProgress(),
+  ])
 
   const turnout = totalUsers > 0 ? (totalVotes / totalUsers) * 100 : 0
-  const countingProgress =
-    totalConstituencies > 0
-      ? (closedConstituencies / totalConstituencies) * 100
-      : 0
 
   const constituencies = await prisma.constituency.findMany({
     include: {
@@ -76,5 +82,34 @@ export const getElectionDashboard = async () => {
     countingProgress: Number(countingProgress.toFixed(2)), // % ของเขตที่ปิดหีบแล้ว
     partyStats,
     updateAt: new Date(),
+  }
+}
+
+export const getProvincesWithConstituenciesService = async () => {
+  const [result, countingProgress] = await Promise.all([
+    getProvincesWithConstituenciesRepository(),
+    getCountingProgress(),
+  ])
+
+  return {
+    provinces: result,
+    updateAt: new Date(),
+    countingProgress: Number(countingProgress.toFixed(2)), // % ของเขตที่ปิดหีบแล้ว
+  }
+}
+
+export const getResultByConstituencieIdService = async (id: number) => {
+  const result = await getResultByConstituencieIdRepository(id)
+  return {
+    ...result,
+    candidates: result?.candidates?.map((c) => ({
+      id: c.id,
+      fullName: c.firstName + ' ' + c.lastName,
+      candidatePolicy: c.candidatePolicy,
+      number: c.number,
+      imageUrl: c.imageUrl,
+      party: c.party,
+      votes: c._count.votes,
+    })),
   }
 }

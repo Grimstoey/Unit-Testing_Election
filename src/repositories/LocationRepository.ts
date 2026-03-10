@@ -19,3 +19,11 @@ export async function getConstituenciesByDistrictId(districtId: number) {
     },
   })
 }
+
+export async function getProvincesWithConstituenciesRepository() {
+  return prisma.province.findMany({
+    include: {
+      constituencies: true,
+    },
+  })
+}
