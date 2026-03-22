@@ -17,7 +17,7 @@ const corsOptions: CorsOptions = {
     process.env.FRONTEND_URL as string,
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://electon-frontend-project.vercel.app',
+    'https://election-frontend-project.vercel.app/',
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
