@@ -10,11 +10,11 @@ export type ProvinceDto = {
   name: string
 }
 
-export type DistrictDto = {
-  id: number
-  name: string
-  provinceId: number
-}
+// export type DistrictDto = {
+//   id: number
+//   name: string
+//   provinceId: number
+// }
 
 export type ConstituencyDto = {
   id: number
