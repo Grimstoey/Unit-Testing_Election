@@ -4,6 +4,8 @@ import {
   getProvincesWithConstituenciesController,
   getResultByConstituencieIdController,
 } from '../controllers/ResultController'
+import {findAllPartyController} from "@/controllers/PartyController";
+import {getAllCandidatesController} from "@/controllers/CandidateController";
 
 const router = Router()
 
@@ -13,5 +15,6 @@ router.get(
   '/provinces-with-constituencies',
   getProvincesWithConstituenciesController,
 )
-
+router.get('/parties', findAllPartyController)
+router.get('/candidates', getAllCandidatesController)
 export default router
