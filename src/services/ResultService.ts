@@ -25,6 +25,7 @@ export const getElectionResult = async () => {
   const turnout = totalUsers > 0 ? (totalVotes / totalUsers) * 100 : 0
 
   const constituencies = await prisma.constituency.findMany({
+    where: { isClosed: true },
     include: {
       candidates: {
         include: {
@@ -100,16 +101,21 @@ export const getProvincesWithConstituenciesService = async () => {
 
 export const getResultByConstituencieIdService = async (id: number) => {
   const result = await getResultByConstituencieIdRepository(id)
+  
+  if (!result) return null
+
+  const isClosed = result.isClosed
+
   return {
     ...result,
-    candidates: result?.candidates?.map((c) => ({
+    candidates: result.candidates.map((c) => ({
       id: c.id,
       fullName: c.firstName + ' ' + c.lastName,
       candidatePolicy: c.candidatePolicy,
       number: c.number,
       imageUrl: c.imageUrl,
       party: c.party,
-      votes: c._count.votes,
+      votes: isClosed ? c._count.votes : 0,
     })),
   }
 }

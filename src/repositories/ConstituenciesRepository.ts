@@ -199,6 +199,7 @@ export async function getResultByConstituencieIdRepository(id: number) {
     where: { id },
     select: {
       id: true,
+      isClosed: true,
       province: {
         select: {
           id: true,
