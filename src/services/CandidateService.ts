@@ -199,61 +199,65 @@ export async function getAllCandidatesService(
   const AND: any[] = []
 
   if (query.search && query.search.trim().length > 0) {
-    const searchValue = query.search.trim()
-    const OR: any[] = []
+    // Split เพื่อ ค้นหาชื่อพร้อมนามสกุล //
+    const keywords = query.search.trim().split(/\s+/)
 
-    // เช็คว่าเป็นตัวเลขล้วนหรือไม่
-    const isAllDigits = !isNaN(Number(searchValue))
+    for (const keyword of keywords) {
+      const OR: any[] = []
 
-    // เช็คว่าเป็นเลข 13 หลักหรือไม่
-    const isCitizenId = isAllDigits && searchValue.length === 13
+      // เช็คว่าเป็นตัวเลขล้วนหรือไม่
+      const isAllDigits = !isNaN(Number(keyword))
 
-    // ถ้าเป็นเลข 13 หลัก เป็น citizenId เท่านั้น
-    if (isCitizenId) {
-      OR.push({
-        citizenId: searchValue,
-      })
-    } else if (isAllDigits) {
-      const searchNumber = Number(searchValue)
+      // เช็คว่าเป็นเลข 13 หลักหรือไม่
+      const isCitizenId = isAllDigits && keyword.length === 13
 
-      OR.push({ id: searchNumber }, { number: searchNumber })
-    }
+      // ถ้าเป็นเลข 13 หลัก เป็น citizenId เท่านั้น
+      if (isCitizenId) {
+        OR.push({
+          citizenId: keyword,
+        })
+      } else if (isAllDigits) {
+        const searchNumber = Number(keyword)
 
-    // ค้นหาข้อความทั่วไป
-    OR.push(
-      {
-        firstName: {
-          contains: searchValue,
-          mode: 'insensitive',
-        },
-      },
-      {
-        lastName: {
-          contains: searchValue,
-          mode: 'insensitive',
-        },
-      },
-      {
-        party: {
-          name: {
-            contains: searchValue,
+        OR.push({ id: searchNumber }, { number: searchNumber })
+      }
+
+      // ค้นหาข้อความทั่วไป
+      OR.push(
+        {
+          firstName: {
+            contains: keyword,
             mode: 'insensitive',
           },
         },
-      },
-      {
-        constituency: {
-          province: {
+        {
+          lastName: {
+            contains: keyword,
+            mode: 'insensitive',
+          },
+        },
+        {
+          party: {
             name: {
-              contains: searchValue,
+              contains: keyword,
               mode: 'insensitive',
             },
           },
         },
-      },
-    )
+        {
+          constituency: {
+            province: {
+              name: {
+                contains: keyword,
+                mode: 'insensitive',
+              },
+            },
+          },
+        },
+      )
 
-    AND.push({ OR })
+      AND.push({ OR })
+    }
   }
 
   // --------- FILTER ---------
