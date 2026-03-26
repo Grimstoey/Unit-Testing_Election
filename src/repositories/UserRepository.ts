@@ -219,13 +219,18 @@ export async function getAllUsersRepository(query: GetAllUsersQueryDto) {
 
   const skip = (page - 1) * limit
 
-  const where = search
+  // Split เพื่อ ค้นหาชื่อพร้อมนามสกุล // 
+  const keywords = search ? search.trim().split(/\s+/) : []
+
+  const where = keywords.length > 0
     ? {
-      OR: [
-        { citizenId: { contains: search, mode: 'insensitive' as const } },
-        { firstName: { contains: search, mode: 'insensitive' as const } },
-        { lastName: { contains: search, mode: 'insensitive' as const } },
-      ],
+      AND: keywords.map((keyword) => ({
+        OR: [
+          { citizenId: { contains: keyword, mode: 'insensitive' as const } },
+          { firstName: { contains: keyword, mode: 'insensitive' as const } },
+          { lastName: { contains: keyword, mode: 'insensitive' as const } },
+        ],
+      })),
     }
     : {}
 
