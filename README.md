@@ -1,83 +1,126 @@
 # 🗳️ Election System Backend
 
-> **ระบบเลือกตั้งออนไลน์** — Backend API สำหรับการลงทะเบียนผู้ใช้ การจัดการเขตเลือกตั้ง พรรคการเมือง ผู้สมัคร การลงคะแนนเสียง และการแสดงผลการเลือกตั้ง
+Backend สำหรับระบบเลือกตั้งออนไลน์ รองรับการสมัครสมาชิก จัดการผู้ใช้/สิทธิ์ เขตเลือกตั้ง พรรค ผู้สมัคร การลงคะแนน และการดูผลการเลือกตั้ง
 
-**Tech Stack:** Express.js 5 + Prisma 7 + PostgreSQL (Supabase) + TypeScript
-**Base URL:** `https://election-backend-project.onrender.com`
+- **Tech Stack:** Express.js 5 + TypeScript + Prisma 7 + PostgreSQL (Supabase)
+- **Auth:** JWT Bearer Token
+- **Default Local URL:** `http://localhost:3000`
+
+---
+
+## 📌 ภาพรวมระบบ
+
+ระบบนี้แบ่งผู้ใช้งานหลักเป็น 3 กลุ่ม:
+
+- `ROLE_ADMIN` — ผู้ดูแลระบบ
+- `ROLE_EC` — กกต.
+- `ROLE_VOTER` — ผู้มีสิทธิ์เลือกตั้ง
+
+ความสามารถหลักของระบบ:
+
+- สมัครสมาชิกและเข้าสู่ระบบด้วยเลขบัตรประชาชน
+- ยืนยันตัวตนด้วย JWT
+- จัดการ role ของผู้ใช้
+- จัดการจังหวัด อำเภอ และเขตเลือกตั้ง
+- จัดการพรรคการเมือง
+- จัดการผู้สมัครรับเลือกตั้ง
+- ลงคะแนนและแก้ไขคะแนนก่อนปิดหีบ
+- ดูผลรวมการเลือกตั้งและผลรายเขต
+- อัปโหลดรูปภาพไปยัง Supabase Storage
 
 ---
 
 ## 📊 สรุปจำนวน Endpoints
 
-| ประเภท                       | จำนวน  | Authentication | Authorization         |
-| ---------------------------- | ------ | -------------- | --------------------- |
-| **Health Check**             | 1      | ❌             | —                     |
-| **Authentication**           | 3      | บางส่วน        | —                     |
-| **Admin**                    | 9      | ✅             | `ROLE_ADMIN`          |
-| **EC (Election Commission)** | 13     | ✅             | `ROLE_EC`             |
-| **Voter**                    | 5      | ✅             | ทุก role (ต้อง login) |
-| **Location**                 | 3      | ❌             | —                     |
-| **Upload**                   | 1      | ❌             | —                     |
-| **Public**                   | 5      | ❌             | —                     |
-| **รวมทั้งหมด**               | **40** | —              | —                     |
+| ประเภท | จำนวน | Authentication | Authorization |
+| --- | ---: | --- | --- |
+| Health Check | 1 | ❌ | - |
+| Authentication | 3 | บางส่วน | - |
+| Admin | 9 | ✅ | `ROLE_ADMIN` |
+| EC | 13 | ✅ | `ROLE_EC` |
+| Voter | 5 | ✅ | ต้อง login |
+| Location | 3 | ❌ | - |
+| Upload | 1 | ❌ | - |
+| Public | 5 | ❌ | - |
+| **รวมทั้งหมด** | **40** | - | - |
+
+> หมายเหตุ:
+> - `Voter` routes ปัจจุบันเช็คแค่การ login ผ่าน JWT ใน route layer
+> - `EC` routes ใช้ `requireRole(RoleName.EC)` โดยตรง
+> - middleware ปัจจุบันไม่มี role hierarchy อัตโนมัติ
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Component        | Technology                             |
-| ---------------- | -------------------------------------- |
-| Runtime          | Node.js + TypeScript 5.x               |
-| Framework        | Express.js 5.x                         |
-| ORM              | Prisma 7.x                             |
-| Database         | PostgreSQL (Supabase)                  |
-| Auth             | JWT (`jsonwebtoken`) + `bcryptjs`      |
-| File Upload      | Multer + AWS S3 SDK (Supabase Storage) |
-| Image Processing | Sharp                                  |
-| Dev Tools        | Nodemon, tsx, tsc-alias                |
+| Component | Technology |
+| --- | --- |
+| Runtime | Node.js |
+| Language | TypeScript |
+| Framework | Express.js 5 |
+| ORM | Prisma 7 |
+| Database | PostgreSQL |
+| Auth | `jsonwebtoken` |
+| Password Hashing | `bcryptjs` |
+| File Upload | `multer` |
+| Image Processing | `sharp` |
+| Object Storage | Supabase Storage (S3-compatible) |
+| Dev Tools | `nodemon`, `tsx`, `tsc`, `tsc-alias` |
 
 ---
 
-## 📁 Project Structure
+## 🧱 Project Structure
 
-```
+```text
 election-backend-project/
 ├── prisma/
-│   ├── schema.prisma          # Database schema (8 models)
-│   ├── seed.ts                # Main seed runner
-│   └── migrations/            # Prisma migrations
+│   ├── migrations/
+│   ├── schema.prisma
+│   ├── seed.ts
+│   └── seed-vote-only.ts
 ├── src/
-│   ├── server.ts              # Express entry point
-│   ├── awsConfig.ts           # S3 client config (Supabase Storage)
+│   ├── awsConfig.ts
+│   ├── server.ts
 │   ├── config/
-│   │   └── env.ts             # Environment variable loader
-│   ├── routes/                # 7 route modules
-│   │   ├── AuthRoutes.ts      # 3 endpoints
-│   │   ├── AdminRoutes.ts     # 9 endpoints
-│   │   ├── ECRoutes.ts        # 13 endpoints
-│   │   ├── VoterRoutes.ts     # 5 endpoints
-│   │   ├── LocationRoutes.ts  # 3 endpoints
-│   │   ├── UploadRoutes.ts    # 1 endpoint
-│   │   └── PublicRoutes.ts    # 5 endpoints
-│   ├── controllers/           # HTTP request handlers
-│   ├── services/              # Business logic
-│   ├── repositories/          # Database access (Prisma queries)
-│   ├── middlewares/
-│   │   ├── AuthMiddleware.ts  # JWT verification + user injection
-│   │   ├── RoleMiddleware.ts  # Role-based access control
-│   │   └── PrismaErrorHandler.ts # Global error handler
-│   ├── models/                # DTOs (Data Transfer Objects)
-│   ├── db/                    # Seed data modules
+│   │   └── env.ts
+│   ├── controllers/
+│   ├── db/
+│   ├── generated/
 │   ├── lib/
-│   │   └── prisma.ts          # Prisma client instance
-│   ├── utils/
-│   │   └── jwt.ts             # JWT sign/verify utilities
-│   └── generated/             # Prisma generated client (gitignored)
-├── .env                       # Environment variables
+│   │   └── prisma.ts
+│   ├── middlewares/
+│   │   ├── AuthMiddleware.ts
+│   │   ├── PrismaErrorHandler.ts
+│   │   └── RoleMiddleware.ts
+│   ├── models/
+│   ├── repositories/
+│   ├── routes/
+│   │   ├── AdminRoutes.ts
+│   │   ├── AuthRoutes.ts
+│   │   ├── ECRoutes.ts
+│   │   ├── LocationRoutes.ts
+│   │   ├── PublicRoutes.ts
+│   │   ├── UploadRoutes.ts
+│   │   └── VoterRoutes.ts
+│   ├── services/
+│   └── utils/
+│       └── jwt.ts
+├── PRD.md
+├── README.md
 ├── package.json
-├── tsconfig.json
-└── PRD.md                     # Product Requirements Document
+├── prisma.config.ts
+└── tsconfig.json
 ```
+
+### Architecture โดยรวม
+
+- `routes` — ประกาศ endpoint
+- `controllers` — รับ request / ส่ง response
+- `services` — business logic
+- `repositories` — query database ผ่าน Prisma
+- `middlewares` — auth / role / global error handling
+- `models` — DTOs และ types
+- `db` — seed helper modules
 
 ---
 
@@ -85,396 +128,798 @@ election-backend-project/
 
 ### `GET /`
 
-- **Authentication:** ❌
-- **Response:**
-  ```json
-  { "message": "Welcome to Election Backend API" }
-  ```
+ตรวจสอบว่า server ทำงานอยู่
 
----
-
-## 🔐 Authentication (3 endpoints)
-
-### 1. `POST /auth/register`
-
-- **คำอธิบาย:** ลงทะเบียนผู้ใช้ใหม่ (จะได้ `ROLE_VOTER` อัตโนมัติ)
-- **Authentication:** ❌
-- **Request Body:**
-  ```json
-  {
-    "citizenId": "1234567890123",
-    "password": "string (min 6 chars)",
-    "firstName": "string",
-    "lastName": "string",
-    "address": "string",
-    "provinceId": 1,
-    "districtId": 1
-  }
-  ```
-- **Response:** `200 OK` — `{ ok, status, data: { accessToken } }`
-
-### 2. `POST /auth/login`
-
-- **คำอธิบาย:** เข้าสู่ระบบ
-- **Authentication:** ❌
-- **Request Body:**
-  ```json
-  {
-    "citizenId": "1234567890123",
-    "password": "string"
-  }
-  ```
-- **Response:** `200 OK` — `{ ok, status, data: { accessToken } }`
-
-### 3. `GET /auth/me`
-
-- **คำอธิบาย:** ดึงข้อมูลผู้ใช้ปัจจุบัน (จาก JWT)
-- **Authentication:** ✅ Bearer Token
-- **Response:** `200 OK` — `{ ok, status, data: { user info + roles } }`
-
----
-
-## 👨‍💼 Admin Routes (9 endpoints)
-
-> **Authorization:** ต้องมี role `ROLE_ADMIN`
-
-### Constituencies Management
-
-| Method   | Endpoint                                                | คำอธิบาย                                    |
-| -------- | ------------------------------------------------------- | ------------------------------------------- |
-| `GET`    | `/admin/constituencies`                                 | ดึงรายการเขตเลือกตั้ง (pagination + filter) |
-| `POST`   | `/admin/constituencies`                                 | สร้างเขตเลือกตั้งใหม่                       |
-| `PUT`    | `/admin/constituencies/:id`                             | แก้ไขเขตเลือกตั้ง / ปิดหีบ                  |
-| `DELETE` | `/admin/constituencies/:id`                             | ลบเขตเลือกตั้ง                              |
-| `GET`    | `/admin/constituencies/:provinceId/available-districts` | ดึงอำเภอที่ยังไม่ถูกผูกกับเขต               |
-
-**Query Parameters สำหรับ GET constituencies:**
-
-- `page` (default: 1), `limit` (default: 10), `provinceId` (optional)
-
-### Users Management
-
-| Method   | Endpoint                     | คำอธิบาย                              |
-| -------- | ---------------------------- | ------------------------------------- |
-| `GET`    | `/admin/users`               | ดึงรายการผู้ใช้ (pagination + search) |
-| `GET`    | `/admin/users/:id/roles`     | ดู roles ของ user                     |
-| `POST`   | `/admin/users/:userId/roles` | เพิ่ม role ให้ user                   |
-| `DELETE` | `/admin/users/:id/roles`     | ลบ role ออกจาก user                   |
-
-**Query Parameters สำหรับ GET users:**
-
-- `page`, `limit`, `search`, `sortBy` (default: id), `order` (default: desc)
-
-**Request Body สำหรับ role management:**
-
-```json
-{ "roleName": "ROLE_EC" }
-```
-
-> Roles: `ROLE_VOTER`, `ROLE_EC`, `ROLE_ADMIN`
-
----
-
-## 🗳️ EC Routes (13 endpoints)
-
-> **Authorization:** ต้องมี role `ROLE_EC`
-
-### Parties Management
-
-| Method   | Endpoint          | คำอธิบาย                   |
-| -------- | ----------------- | -------------------------- |
-| `GET`    | `/ec/parties`     | ดึงรายการพรรค (pagination) |
-| `GET`    | `/ec/parties/:id` | ดูพรรคตาม ID               |
-| `POST`   | `/ec/parties`     | สร้างพรรคใหม่              |
-| `PUT`    | `/ec/parties/:id` | แก้ไขพรรค                  |
-| `DELETE` | `/ec/parties/:id` | ลบพรรค                     |
-
-**Request Body (POST/PUT):**
-
+**Response**
 ```json
 {
-  "name": "string",
-  "logoUrl": "string",
-  "policy": "string"
+  "message": "Welcome to Election Backend API"
 }
 ```
 
-### Candidates Management
+---
 
-| Method   | Endpoint             | คำอธิบาย                                |
-| -------- | -------------------- | --------------------------------------- |
-| `GET`    | `/ec/candidates`     | ดึงรายการผู้สมัคร (pagination + filter) |
-| `POST`   | `/ec/candidates`     | สร้างผู้สมัครใหม่                       |
-| `PATCH`  | `/ec/candidates/:id` | แก้ไขผู้สมัคร                           |
-| `DELETE` | `/ec/candidates/:id` | ลบผู้สมัคร                              |
+## 🔐 Authentication
 
-**Query Parameters สำหรับ GET candidates:**
+### `POST /auth/register`
 
-- `page`, `limit`, `search`, `sortBy`, `order`, `partyId`, `constituencyId`, `provinceId`
+ลงทะเบียนผู้ใช้ใหม่ โดยผู้ใช้ใหม่จะได้ `ROLE_VOTER` อัตโนมัติ
 
-**Request Body (POST):**
+**Request Body**
+```json
+{
+  "citizenId": "1234567890123",
+  "password": "123456",
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "Bangkok",
+  "provinceId": 1,
+  "districtId": 1
+}
+```
 
+**Validation หลัก**
+- `citizenId` ต้องเป็นตัวเลข 13 หลัก
+- `citizenId` ต้องไม่ซ้ำ
+- `provinceId` ต้องเป็น number
+- `districtId` ต้องอยู่ในจังหวัดที่เลือก
+
+**Response**
+- สำเร็จ: `201 Created`
+- ตัว response จริงจะคืนข้อมูล user ที่ถูกสร้าง ไม่ได้คืน token
+
+ตัวอย่าง:
+```json
+{
+  "id": 1,
+  "citizenId": "1234567890123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "Bangkok",
+  "provinceId": 1,
+  "districtId": 1,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "roles": [
+    {
+      "role": {
+        "id": 1,
+        "name": "ROLE_VOTER"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### `POST /auth/login`
+
+เข้าสู่ระบบ
+
+**Request Body**
+```json
+{
+  "citizenId": "1234567890123",
+  "password": "123456"
+}
+```
+
+**Response**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+---
+
+### `GET /auth/me`
+
+ดึงข้อมูลผู้ใช้ปัจจุบันจาก JWT
+
+**Headers**
+```http
+Authorization: Bearer <jwt_token>
+```
+
+**Response ตัวอย่าง**
+```json
+{
+  "ok": true,
+  "data": {
+    "id": 1,
+    "citizenId": "1234567890123",
+    "firstName": "John",
+    "lastName": "Doe",
+    "address": "Bangkok",
+    "province": {
+      "id": 1,
+      "name": "กรุงเทพมหานคร"
+    },
+    "district": {
+      "id": 1,
+      "name": "พระนคร"
+    },
+    "constituency": {
+      "id": 1,
+      "number": 1,
+      "isClosed": false
+    },
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "roles": ["ROLE_VOTER"]
+  }
+}
+```
+
+> หมายเหตุ: controller คืนค่า `req.body.user` ตรง ๆ ดังนั้นรูปแบบจริงขึ้นกับ service ที่ map ข้อมูล user
+
+---
+
+## 👨‍💼 Admin Routes
+
+> ทุก endpoint ใต้ `/admin` ต้อง:
+> - login ก่อน
+> - มี `ROLE_ADMIN`
+
+### Constituencies
+
+#### `GET /admin/constituencies`
+
+ดึงรายการเขตเลือกตั้งแบบแบ่งหน้า และ filter ตามจังหวัดได้
+
+**Query Parameters**
+- `page` default `1`
+- `limit` default `10`
+- `provinceId` optional
+
+---
+
+#### `POST /admin/constituencies`
+
+สร้างเขตเลือกตั้งใหม่
+
+**Request Body**
+```json
+{
+  "number": 1,
+  "provinceId": 1,
+  "districtIds": [1, 2, 3]
+}
+```
+
+---
+
+#### `PUT /admin/constituencies/:id`
+
+แก้ไขข้อมูลเขตเลือกตั้ง รวมถึงการผูก district และสถานะ `isClosed`
+
+**Request Body**
+```json
+{
+  "number": 1,
+  "provinceId": 1,
+  "isClosed": true,
+  "districtIds": [1, 2]
+}
+```
+
+---
+
+#### `DELETE /admin/constituencies/:id`
+
+ลบเขตเลือกตั้ง
+
+---
+
+#### `GET /admin/constituencies/:provinceId/available-districts`
+
+ดึงอำเภอในจังหวัดนั้นที่ยังไม่ได้ถูก assign ให้ constituency
+
+---
+
+### Users
+
+#### `GET /admin/users`
+
+ดึงรายการผู้ใช้แบบแบ่งหน้า
+
+**Query Parameters**
+- `page`
+- `limit`
+- `search`
+- `sortBy` = `id | createdAt | firstName | lastName`
+- `order` = `asc | desc`
+- `provinceId` optional
+
+**ข้อมูลที่ response มี**
+- ข้อมูลพื้นฐาน user
+- province / district / constituency
+- roles
+- vote ของ user ถ้ามี
+
+---
+
+#### `GET /admin/users/:id/roles`
+
+ดู roles ของ user ตาม id
+
+---
+
+#### `POST /admin/users/:userId/roles`
+
+กำหนด role ให้ user
+
+**Request Body**
+```json
+{
+  "roleName": "ROLE_EC"
+}
+```
+
+**ค่าที่ใช้ได้**
+- `ROLE_VOTER`
+- `ROLE_EC`
+- `ROLE_ADMIN`
+
+---
+
+#### `DELETE /admin/users/:id/roles`
+
+ลบ role ออกจาก user
+
+**Request Body**
+```json
+{
+  "roleName": "ROLE_EC"
+}
+```
+
+> หมายเหตุ: `ROLE_VOTER` ถูกป้องกันไม่ให้ลบผ่าน service นี้
+
+---
+
+## 🗳️ EC Routes
+
+> ทุก endpoint ใต้ `/ec` ต้อง:
+> - login ก่อน
+> - มี `ROLE_EC`
+
+### Parties
+
+#### `GET /ec/parties`
+
+ดึงรายการพรรคแบบแบ่งหน้า
+
+**Query Parameters**
+- `page` default `1`
+- `limit` default `10`
+
+---
+
+#### `GET /ec/parties/:id`
+
+ดูพรรคตาม id
+
+---
+
+#### `POST /ec/parties`
+
+สร้างพรรคใหม่
+
+**Request Body**
+```json
+{
+  "name": "พรรคตัวอย่าง",
+  "logoUrl": "https://example.com/logo.png",
+  "policy": "นโยบายของพรรค"
+}
+```
+
+---
+
+#### `PUT /ec/parties/:id`
+
+แก้ไขพรรค
+
+**Request Body**
+```json
+{
+  "name": "พรรคตัวอย่าง",
+  "logoUrl": "https://example.com/logo.png",
+  "policy": "นโยบายใหม่"
+}
+```
+
+---
+
+#### `DELETE /ec/parties/:id`
+
+ลบพรรค
+
+---
+
+### Candidates
+
+#### `GET /ec/candidates`
+
+ดึงรายการผู้สมัครแบบแบ่งหน้า พร้อม search / sort / filter
+
+**Query Parameters**
+- `page` default `1`
+- `limit` default `10`
+- `search` optional
+- `sortBy`
+- `order`
+- `partyId` optional
+- `constituencyId` optional
+- `provinceId` optional
+
+> search ปัจจุบันรองรับการค้นหาหลายคำ โดยจะแยกคำจากช่องว่าง
+
+---
+
+#### `POST /ec/candidates`
+
+สร้างผู้สมัครใหม่
+
+**Request Body**
 ```json
 {
   "citizenId": "1234567890123",
   "number": 1,
-  "firstName": "string",
-  "lastName": "string",
-  "candidatePolicy": "string (optional)",
-  "imageUrl": "string",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "candidatePolicy": "นโยบายเฉพาะตัว",
+  "imageUrl": "https://example.com/candidate.webp",
   "partyId": 1,
   "constituencyId": 1
 }
 ```
 
-### Constituency Management (EC)
+**Validation หลัก**
+- citizenId ผู้สมัครต้องไม่ซ้ำ
+- เบอร์ผู้สมัครห้ามซ้ำในเขตเดียวกัน
+- พรรคเดียวกันส่งได้ 1 คนต่อเขต
+- party และ constituency ต้องมีอยู่จริง
 
-| Method | Endpoint                        | คำอธิบาย               |
-| ------ | ------------------------------- | ---------------------- |
-| `GET`  | `/ec/constituencies`            | ดึงรายการเขตเลือกตั้ง  |
-| `POST` | `/ec/constituencies/close-all`  | ปิดหีบทุกเขตเลือกตั้ง  |
-| `POST` | `/ec/constituencies/open-all`   | เปิดหีบทุกเขตเลือกตั้ง |
-| `POST` | `/ec/constituencies/:id/toggle` | สลับสถานะเปิด/ปิดหีบ   |
+> ถ้าไม่ส่ง `candidatePolicy` ระบบจะ fallback ไปใช้นโยบายของพรรค
 
 ---
 
-## 🙋 Voter Routes (5 endpoints)
+#### `PATCH /ec/candidates/:id`
 
-> **Authorization:** ต้องมี JWT Token (ทุก role ที่ login แล้ว)
+แก้ไขข้อมูลผู้สมัครแบบ partial update
 
-| Method | Endpoint              | คำอธิบาย                        |
-| ------ | --------------------- | ------------------------------- |
-| `GET`  | `/voter/candidates`   | ดึงรายการผู้สมัครในเขตของผู้ใช้ |
-| `GET`  | `/voter/constituency` | ดึงข้อมูลเขตเลือกตั้งของผู้ใช้  |
-| `GET`  | `/voter/my-vote`      | ดึงข้อมูลคะแนนที่ลงไปแล้ว       |
-| `POST` | `/voter/vote`         | ลงคะแนนเสียง                    |
-| `PUT`  | `/voter/vote`         | เปลี่ยนคะแนนเสียง (ก่อนปิดหีบ)  |
+---
 
-**Request Body (POST/PUT vote):**
+#### `DELETE /ec/candidates/:id`
 
+ลบผู้สมัคร
+
+> ลบไม่ได้ถ้ามี vote ผูกอยู่
+
+---
+
+### Constituencies
+
+#### `GET /ec/constituencies`
+
+ดึงรายการ constituency แบบแบ่งหน้า
+
+---
+
+#### `POST /ec/constituencies/close-all`
+
+ปิดหีบทุกเขต
+
+---
+
+#### `POST /ec/constituencies/open-all`
+
+เปิดหีบทุกเขต
+
+---
+
+#### `POST /ec/constituencies/:id/toggle`
+
+สลับสถานะ `isClosed` ของเขตเดียว
+
+---
+
+## 🙋 Voter Routes
+
+> ทุก endpoint ใต้ `/voter` ต้อง login ก่อน  
+> ปัจจุบันใน route layer ยังไม่ได้เช็ค `ROLE_VOTER` โดยตรง
+
+### `GET /voter/candidates`
+
+ดึงผู้สมัครในเขตของ user
+
+ระบบหาเขตจาก:
+- `user -> district -> constituency`
+
+---
+
+### `GET /voter/constituency`
+
+ดึงข้อมูล constituency ของ user
+
+---
+
+### `GET /voter/my-vote`
+
+ดึง vote ปัจจุบันของ user
+
+---
+
+### `POST /voter/vote`
+
+สร้าง vote ใหม่
+
+**Request Body**
 ```json
-{ "candidateId": 1 }
+{
+  "candidateId": 1
+}
 ```
 
----
-
-## 📍 Location Routes (3 endpoints)
-
-> **Authentication:** ❌ Public
-
-| Method | Endpoint                                         | คำอธิบาย                 |
-| ------ | ------------------------------------------------ | ------------------------ |
-| `GET`  | `/location/provinces`                            | ดึงรายการจังหวัด         |
-| `GET`  | `/location/provinces/:provinceId/districts`      | ดึงรายการอำเภอตามจังหวัด |
-| `GET`  | `/location/districts/:districtId/constituencies` | ดึงเขตเลือกตั้งตามอำเภอ  |
+**เงื่อนไข**
+- user ต้องมี constituency
+- constituency ต้องยังไม่ปิด
+- candidate ต้องอยู่ใน constituency เดียวกับ user
 
 ---
 
-## 📤 Upload Routes (1 endpoint)
+### `PUT /voter/vote`
 
-| Method | Endpoint  | คำอธิบาย                               |
-| ------ | --------- | -------------------------------------- |
-| `POST` | `/upload` | อัปโหลดไฟล์ไปยัง Supabase Storage (S3) |
+เปลี่ยน vote
 
-**Request:** `multipart/form-data`
+**Request Body**
+```json
+{
+  "candidateId": 2
+}
+```
 
-- `file` — ไฟล์ที่ต้องการอัปโหลด
-- `folder` — (optional) โฟลเดอร์ปลายทาง (default: `uploads`)
+**เงื่อนไข**
+- ใช้ validation เดียวกับ create vote
+- แก้ไขไม่ได้ถ้าเขตปิดแล้ว
 
 ---
 
-## 📊 Public Routes (5 endpoints)
+## 📍 Location Routes
 
-> **Authentication:** ❌ Public
+public ทั้งหมด ไม่ต้อง login
 
-| Method | Endpoint                                | คำอธิบาย                      |
-| ------ | --------------------------------------- | ----------------------------- |
-| `GET`  | `/public/results`                       | ดูผลการเลือกตั้งแบบ dashboard |
-| `GET`  | `/public/contstituencies-result/:id`    | ดูผลรายเขตเลือกตั้ง           |
-| `GET`  | `/public/provinces-with-constituencies` | ดูจังหวัดพร้อมเขตเลือกตั้ง    |
-| `GET`  | `/public/parties`                       | ดูรายการพรรคการเมืองทั้งหมด   |
-| `GET`  | `/public/candidates`                    | ดูรายการผู้สมัครทั้งหมด       |
+### `GET /location/provinces`
+
+ดึงรายการจังหวัดทั้งหมด
+
+---
+
+### `GET /location/provinces/:provinceId/districts`
+
+ดึงอำเภอทั้งหมดในจังหวัดนั้น
+
+---
+
+### `GET /location/districts/:districtId/constituencies`
+
+ดึง constituency ของ district นั้น
+
+> ปัจจุบัน district 1 ตัวผูกกับ constituency ได้ 0 หรือ 1 ตัว
+
+---
+
+## ☁️ Upload Route
+
+### `POST /upload`
+
+อัปโหลดไฟล์รูปภาพ
+
+**Form Data**
+- `file` — ไฟล์รูป
+- `folder` — optional, default = `uploads`
+
+**พฤติกรรม**
+- รับไฟล์ผ่าน memory storage
+- ถ้าเป็นรูปจะถูกแปลงเป็น `webp`
+- สุ่มชื่อไฟล์ใหม่
+- upload ไป bucket `Election_App`
+- คืน public URL กลับมา
+
+**Response ตัวอย่าง**
+```json
+{
+  "url": "https://your-project.supabase.co/storage/v1/object/public/Election_App/uploads/xxxx.webp"
+}
+```
+
+> หมายเหตุ:
+> - route นี้ปัจจุบันยังไม่มี auth
+> - ถ้าไฟล์ไม่ใช่ image จะถูกปฏิเสธ
+
+---
+
+## 🌐 Public Routes
+
+public ทั้งหมด ไม่ต้อง login
+
+### `GET /public/results`
+
+ดึง dashboard สรุปผลรวมการเลือกตั้ง
+
+**ข้อมูลที่ได้**
+- `totalVotes`
+- `turnout`
+- `countingProgress`
+- `partyStats`
+- `updateAt`
+
+**หมายเหตุ**
+- นับ seat จากเขตที่ `isClosed = true`
+- ถ้าในเขตมีคะแนนเสมอ จะถือว่าไม่มีผู้ชนะของเขตนั้น
+
+---
+
+### `GET /public/contstituencies-result/:id`
+
+ดึงผลรายเขตเลือกตั้งตาม id
+
+**Behavior**
+- ถ้าเขตยังไม่ปิด จะคืน `votes: 0`
+- ถ้าเขตปิดแล้ว จะแสดงจำนวนคะแนนจริง
+
+> ชื่อ path ปัจจุบันสะกดเป็น `contstituencies-result` ตามโค้ดจริง
+
+---
+
+### `GET /public/provinces-with-constituencies`
+
+ดึงรายการจังหวัดพร้อมเขตเลือกตั้งทั้งหมด
+
+response มี:
+- `provinces`
+- `countingProgress`
+- `updateAt`
+
+---
+
+### `GET /public/parties`
+
+ดึงรายการพรรคทั้งหมด
+
+> ใช้ controller เดียวกับ party list แบบ non-paginated
+
+---
+
+### `GET /public/candidates`
+
+ดึงรายการผู้สมัครทั้งหมด
+
+> ใช้ controller เดียวกับ candidate list แบบ paginated/filterable
 
 ---
 
 ## 🔑 Authentication & Authorization
 
-### JWT Token Format
+### JWT Header Format
 
-```
+```http
 Authorization: Bearer <jwt_token>
 ```
 
 ### Available Roles
 
-| Role         | Description                | สิทธิ์การเข้าถึง         |
-| ------------ | -------------------------- | ------------------------ |
-| `ROLE_ADMIN` | ผู้ดูแลระบบ                | เข้าถึงได้ทุก endpoint   |
-| `ROLE_EC`    | กกต. (Election Commission) | EC routes + Voter routes |
-| `ROLE_VOTER` | ผู้ลงคะแนน (default)       | Voter routes เท่านั้น    |
+| Role | Description |
+| --- | --- |
+| `ROLE_ADMIN` | ผู้ดูแลระบบ |
+| `ROLE_EC` | กกต. |
+| `ROLE_VOTER` | ผู้มีสิทธิ์เลือกตั้ง |
+
+### Authorization behavior ปัจจุบัน
+
+- `requireAuth` จะอ่าน JWT แล้วใส่ข้อมูล user ลงใน `req.body.user`
+- `requireRole` จะเช็ค role จาก `req.body.user.roles`
+- ไม่มี role hierarchy อัตโนมัติใน middleware
+- ดังนั้น `ROLE_ADMIN` จะเข้า route ของ `ROLE_EC` ได้ ก็ต่อเมื่อ user มี role นั้นอยู่จริง
 
 ### Middleware Flow
 
-```
-Request → CORS → JSON Parser → [requireAuth] → [requireRole] → Controller → [errorHandler]
+```text
+Request
+  -> CORS
+  -> JSON Parser
+  -> requireAuth
+  -> requireRole
+  -> Controller
+  -> errorHandler
 ```
 
 ---
 
-## 🗄️ Database Schema (Prisma)
+## 🗃️ Database Schema
 
-```
-┌─────────┐     ┌──────────┐     ┌──────────┐
-│  user    │────▶│ userRole │◀────│   role   │
-│          │     └──────────┘     └──────────┘
-│          │────▶ vote
-│          │────▶ province
-│          │────▶ district
-└─────────┘
+ระบบใช้ Prisma schema โดยมี model หลัก 9 ตัว:
 
-┌──────────┐     ┌──────────────┐     ┌───────────┐
-│ province │────▶│ constituency │◀────│ candidate │────▶ party
-│          │────▶│              │     │           │────▶ vote
-│          │────▶│  district    │     └───────────┘
-└──────────┘     └──────────────┘
-```
+- `user`
+- `role`
+- `userRole`
+- `province`
+- `district`
+- `constituency`
+- `party`
+- `candidate`
+- `vote`
 
-### Models
+### ความสัมพันธ์สำคัญ
 
-| Model          | คำอธิบาย               | Key Fields                                          |
-| -------------- | ---------------------- | --------------------------------------------------- |
-| `user`         | ผู้ใช้ระบบ             | citizenId (unique), firstName, lastName, address    |
-| `role`         | สิทธิ์ผู้ใช้           | name (unique): ROLE_ADMIN / ROLE_EC / ROLE_VOTER    |
-| `userRole`     | ความสัมพันธ์ user-role | composite PK: (userId, roleId)                      |
-| `province`     | จังหวัด                | name (unique)                                       |
-| `district`     | อำเภอ                  | name, provinceId, constituencyId (nullable)         |
-| `constituency` | เขตเลือกตั้ง           | number, provinceId, isClosed                        |
-| `party`        | พรรคการเมือง           | name (unique), logoUrl, policy                      |
-| `candidate`    | ผู้สมัคร               | citizenId (unique), number, partyId, constituencyId |
-| `vote`         | คะแนนเสียง             | userId (unique), candidateId                        |
+- ผู้ใช้ผูกกับ `province` และ `district`
+- `district` ผูกกับ `constituency`
+- ผู้ใช้ไม่ได้เก็บ `constituencyId` โดยตรง
+- ผู้สมัครผูกกับ `party` และ `constituency`
+- `vote` ผูกกับ `user` และ `candidate`
+- 1 user มี vote ได้ 1 record (`userId` unique)
 
----
+### Constraints สำคัญ
 
-## 📝 Response Format
-
-### สำเร็จ
-
-```json
-{
-  "ok": true,
-  "status": 200,
-  "message": "...",
-  "data": { ... }
-}
-```
-
-### ผิดพลาด
-
-```json
-{
-  "ok": false,
-  "status": 400,
-  "message": "..."
-}
-```
-
-### Error Handling (Global)
-
-| Prisma Error | HTTP Status | Description                         |
-| ------------ | ----------- | ----------------------------------- |
-| P2002        | 409         | Duplicate value (unique constraint) |
-| P2025        | 404         | Record not found                    |
-| P2003        | 400         | Foreign key constraint failed       |
-| Validation   | 400         | Invalid database query              |
-| Init Error   | 500         | Database connection error           |
+- `user.citizenId` unique
+- `party.name` unique
+- `candidate.citizenId` unique
+- `candidate(number, constituencyId)` unique
+- `candidate(partyId, constituencyId)` unique
+- `vote.userId` unique
 
 ---
 
-## 🚀 Quick Start
+## 🌱 Seed Data
 
+โปรเจกต์นี้มี seed script สำหรับ mock data
+
+### คำสั่ง
 ```bash
-# 1. Install dependencies
-npm install
-
-# 2. Setup environment variables
-cp .env.example .env
-# ตั้งค่า: DATABASE_URL, DIRECT_URL, JWT_SECRET, JWT_EXPIRES_IN,
-#          AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION,
-#          SUPABASE_ENDPOINT_URL
-
-# 3. Generate Prisma client
-npx prisma generate
-
-# 4. Run migrations
-npx prisma migrate dev
-
-# 5. Seed database (optional)
 npm run seed
-
-# 6. Start dev server
-npm run dev
 ```
 
-Server จะรันที่: `http://localhost:3000`
+### ลำดับการ seed หลัก
+- roles
+- provinces
+- constituencies
+- districts
+- parties
+- candidates
+- users
+- votes
 
-### Available Scripts
+### ไฟล์ที่เกี่ยวข้อง
+- `prisma/seed.ts`
+- `prisma/seed-vote-only.ts`
+- `src/db/seedRole.ts`
+- `src/db/seedProvince.ts`
+- `src/db/seedConstituency.ts`
+- `src/db/seedDistrict.ts`
+- `src/db/seedParty.ts`
+- `src/db/seedCandidate.ts`
+- `src/db/seedUser.ts`
+- `src/db/seedVote.ts`
 
-| Script          | Command                            | คำอธิบาย                    |
-| --------------- | ---------------------------------- | --------------------------- |
-| `npm run dev`   | `nodemon --exec tsx src/server.ts` | รัน dev server (hot reload) |
-| `npm run build` | `tsc && tsc-alias`                 | Build production            |
-| `npm start`     | `node dist/server.js`              | รัน production server       |
-| `npm run seed`  | `prisma db seed`                   | Seed ข้อมูลตัวอย่าง         |
+---
+
+## 📜 Scripts
+
+| Script | Command | Description |
+| --- | --- | --- |
+| `npm run dev` | `nodemon --exec tsx src/server.ts` | รัน dev server |
+| `npm run build` | `tsc && tsc-alias` | build โปรเจกต์ |
+| `npm start` | `node dist/server.js` | รัน production build |
+| `npm run seed` | `prisma db seed` | seed ข้อมูลตัวอย่าง |
+| `npm test` | `echo "Error: no test specified" && exit 1` | ยังไม่มี test จริง |
 
 ---
 
 ## ⚙️ Environment Variables
 
-| Variable                | Description                      | Required |
-| ----------------------- | -------------------------------- | -------- |
-| `DATABASE_URL`          | PostgreSQL connection (pooler)   | ✅       |
-| `DIRECT_URL`            | PostgreSQL direct connection     | ✅       |
-| `JWT_SECRET`            | Secret key สำหรับ JWT            | ✅       |
-| `JWT_EXPIRES_IN`        | อายุ token เช่น `24h`            | ✅       |
-| `AWS_ACCESS_KEY_ID`     | Supabase Storage access key      | ✅       |
-| `AWS_SECRET_ACCESS_KEY` | Supabase Storage secret key      | ✅       |
-| `AWS_REGION`            | AWS region เช่น `ap-southeast-1` | ✅       |
-| `SUPABASE_ENDPOINT_URL` | Supabase S3 endpoint URL         | ✅       |
-| `FRONTEND_URL`          | Frontend URL สำหรับ CORS         | ❌       |
-| `PORT`                  | Port (default: 3000)             | ❌       |
+ค่าที่ระบบใช้งานจริงจากโค้ดมีอย่างน้อย:
+
+```env
+PORT=3000
+DIRECT_URL=postgresql://...
+JWT_SECRET=your-secret
+JWT_EXPIRES_IN=7d
+FRONTEND_URL=http://localhost:3001
+
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=...
+SUPABASE_ENDPOINT_URL=...
+```
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `DIRECT_URL` | ✅ | PostgreSQL direct connection string |
+| `JWT_SECRET` | ✅ | secret สำหรับ sign/verify JWT |
+| `JWT_EXPIRES_IN` | ✅ | อายุ token เช่น `7d` |
+| `AWS_ACCESS_KEY_ID` | ✅ | key สำหรับ object storage |
+| `AWS_SECRET_ACCESS_KEY` | ✅ | secret สำหรับ object storage |
+| `AWS_REGION` | ✅ | region ของ S3-compatible storage |
+| `SUPABASE_ENDPOINT_URL` | ✅ | Supabase S3 endpoint |
+| `FRONTEND_URL` | ❌ | frontend URL สำหรับ CORS |
+| `PORT` | ❌ | port ของ server |
+
+> หมายเหตุ: ใน repository ปัจจุบันมีไฟล์ `.env` แต่ไม่ได้มี `.env.example`
+
+---
+
+## 🚀 Quick Start
+
+### 1) Install dependencies
+```bash
+npm install
+```
+
+### 2) Setup environment
+สร้างหรือแก้ไขไฟล์ `.env` ให้มีค่าตามหัวข้อด้านบน
+
+### 3) Run migrations
+```bash
+npx prisma migrate dev
+```
+
+### 4) Seed database
+```bash
+npm run seed
+```
+
+### 5) Start dev server
+```bash
+npm run dev
+```
+
+server จะรันที่:
+```text
+http://localhost:3000
+```
+
+---
+
+## 📝 Notes
+
+- response format ของแต่ละ route ยังไม่สม่ำเสมอ 100%
+- บาง route คืน `{ ok, status, message, data }`
+- บาง route คืน object ตรง ๆ เช่น login / register บางกรณี
+- Prisma errors ถูกจัดการผ่าน global error handler
+- CORS เปิดให้เฉพาะ origin ที่กำหนดใน `src/server.ts`
+- `dist/` จะมีไฟล์หลัง build
+- โปรเจกต์นี้ยังไม่มี automated test suite จริง
 
 ---
 
 ## 🎯 Use Cases by Role
 
 ### 👨‍💼 Admin
+- จัดการเขตเลือกตั้ง
+- ดูอำเภอที่ยังไม่ถูกผูกกับเขต
+- ดูผู้ใช้ทั้งหมด
+- ดู/เพิ่ม/ลบ role ของผู้ใช้
 
-- จัดการเขตเลือกตั้ง (CRUD)
-- ดูอำเภอที่ว่างสำหรับผูกเขต
-- จัดการผู้ใช้ทั้งหมด
-- เปลี่ยน role ผู้ใช้
-
-### 🗳️ EC (Election Commission)
-
-- จัดการพรรคการเมือง (CRUD)
-- จัดการผู้สมัคร (CRUD)
+### 🗳️ EC
+- จัดการพรรคการเมือง
+- จัดการผู้สมัคร
 - ดูรายการเขตเลือกตั้ง
-- ปิด/เปิดหีบเลือกตั้ง (ทีละเขต หรือ ทั้งหมด)
+- เปิด/ปิดหีบรายเขตหรือทั้งหมด
 
 ### 🙋 Voter
-
-- ดูข้อมูลเขตเลือกตั้งของตัวเอง
-- ดูรายการผู้สมัครในเขต
-- ลงคะแนนเสียง
-- เปลี่ยนคะแนนเสียง (ถ้าหีบยังเปิดอยู่)
+- ดูเขตของตัวเอง
+- ดูผู้สมัครในเขต
+- ลงคะแนน
+- เปลี่ยนคะแนนก่อนปิดหีบ
 
 ### 🌐 Public
-
-- ดูผลการเลือกตั้ง (dashboard)
-- ดูผลรายเขตเลือกตั้ง
-- ดูจังหวัดพร้อมเขตเลือกตั้ง
-- ดูรายการพรรคการเมือง
-- ดูรายการผู้สมัคร
+- ดูผลรวมการเลือกตั้ง
+- ดูผลรายเขต
+- ดูจังหวัดพร้อมเขต
+- ดูพรรคทั้งหมด
+- ดูผู้สมัครทั้งหมด
 
 ---
 
