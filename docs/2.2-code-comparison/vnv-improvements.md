@@ -1,18 +1,19 @@
-# V&V Improvement Register
+# บันทึกการปรับปรุงโค้ดตามหลัก Verification & Validation (V&V)
 
-## Confirmed baseline gaps
-1. No executable `npm test` task in `main`.
-2. `createPartyService` in `main` does not trim or validate party fields before passing them to Prisma.
-3. The create controller gets authenticated user data from `req.body.user`, which is populated by `requireAuth`. This arrangement should be tested for preservation of 401 and 403 decisions.
-4. `PrismaErrorHandler` handles known Prisma failures (e.g. P2002 => 409); adding input validation must preserve these responses.
+## ปัญหาหรือช่องว่างที่พบใน Branch main
+1. `package.json` ยังไม่มีคำสั่ง `npm test` ที่รัน Unit Test ได้จริง
+2. `createPartyService` เดิมส่งข้อมูลไป Prisma โดยตรง ไม่มีการ Trim หรือ Validation
+3. Controller ใช้ `req.body.user` ที่มาจาก `requireAuth` จึงต้องทดสอบให้แน่ใจว่าการตอบกลับ 401 และ 403 ยังถูกต้อง
+4. `PrismaErrorHandler` จัดการข้อผิดพลาด เช่น P2002 → 409 อยู่แล้ว และต้องไม่ทำให้พฤติกรรมนี้เสียไป
 
-## Planned improvements and verification
-| Candidate change | Rationale | Planned verification | State |
+## การปรับปรุงและแผนยืนยันผล
+| การเปลี่ยนแปลง | เหตุผล | Unit Tests ที่เกี่ยวข้อง | สถานะ |
 |---|---|---|---|
-| Extract or add validation for required party fields and normalization | FR-10, FR-11, FR-12 | UT-CP-002–008 | Proposed |
-| Introduce isolated test doubles for persistence | Unit tests should not touch live DB | UT-CP-015–017 | Proposed |
-| Add a test runner and Faker dependency | Homework requirement 2.3 | UT-CP-018 | Proposed |
-| Ensure rejected inputs do not invoke persistence | Prevent invalid writes | UT-CP-007, 016 | Proposed |
-| Report safe errors on unexpected persistence failures | FR-09, security | UT-CP-014 | Proposed |
+| เพิ่ม `validateCreateParty` สำหรับข้อมูลบังคับและการตัดช่องว่าง | รองรับ FR-10–FR-12 | UT-CP-002–008 | เพิ่มโค้ดแล้ว ยังไม่ยืนยันผลรัน |
+| แยก `createPartyUseCase` ให้รับฟังก์ชันบันทึกข้อมูลจากภายนอก | ใช้ Stub/Spy/Mock ได้โดยไม่ต่อฐานข้อมูล | UT-CP-015–017 | เพิ่มโค้ดแล้ว ยังไม่ยืนยันผลรัน |
+| ตั้งค่า Test Runner ผ่าน `tsx` | ให้เรียก Test Suite ด้วย `npm test` | Test Suite | ตั้งค่าแล้ว ยังไม่ยืนยันผลรัน |
+| ตรวจสอบว่าข้อมูลผิดไม่ทำให้เกิดการบันทึก | ลดโอกาสบันทึกข้อมูลที่ไม่ถูกต้อง | UT-CP-007, 016 | เขียนบางกรณีแล้ว |
+| เพิ่ม Faker และจัดการ Lockfile | ทำตามข้อ 2.3.6 | UT-CP-018 | ยังไม่ดำเนินการ |
+| ตรวจสอบการจัดการข้อผิดพลาดจากฐานข้อมูล | รองรับ FR-09 และลดความเสี่ยงข้อมูลรั่วไหล | UT-CP-014 | ยังไม่ดำเนินการ |
 
-**Do not label proposed changes completed until verified in code.** Final analysis will include file-by-file diff against `main`, exact commands, and test evidence.
+**ข้อกำหนดเรื่องหลักฐาน:** สิ่งที่เขียนโค้ดแล้วไม่ได้แปลว่าทดสอบผ่าน จะสรุปผลว่าแก้ปัญหาสำเร็จเมื่อมีผลรันจริงและตรวจสอบ Git Diff แล้วเท่านั้น
