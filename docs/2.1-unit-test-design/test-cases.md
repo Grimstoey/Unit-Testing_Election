@@ -26,6 +26,14 @@
 | UT-CP-020 | ผู้ใช้มี Role `EC` | เรียก `next()` | Happy Path, FR-03 |
 | UT-CP-021 | Lookup โยน Exception จาก Token | ตอบ HTTP 401 โดยไม่เรียก `next()` | Failure, FR-02 |
 
+| UT-CP-022 | Prisma Known Error P2025 | ตอบ 404 Not Found | Error Decision, FR-09 |
+| UT-CP-023 | Prisma Known Error P2003 | ตอบ 400 Foreign Key Constraint | Error Decision, FR-09 |
+| UT-CP-024 | Prisma Known Error อื่น | ตอบ 400 Database error | Error Decision, FR-09 |
+| UT-CP-025 | Prisma P2002 ใน Production | 409 โดยไม่แสดง Code หรือ Metadata | Security / Error Handling, FR-09 |
+| UT-CP-026 | Response ส่ง Headers ไปแล้ว | ส่ง Error ให้ next() | Middleware Branch, FR-09 |
+| UT-CP-027 | Bearer Token มีแต่ช่องว่าง | 401 และไม่เรียก Lookup | Authentication, FR-02 |
+| UT-CP-028 | Persistence Dependency โยน Error | Use Case ส่งต่อ Error และไม่คืน Success | Failure Path, FR-09 |
+
 ## เหตุผลที่เพิ่มกรณีทดสอบ
 
 นอกจากข้อมูลไม่ครบและช่องว่าง ยังตรวจการทำงานของ Middleware ทั้งเส้นทางสำเร็จและล้มเหลว การแมป Audit Fields การแปลง Database Error เป็น HTTP Status และการป้องกันเปิดเผยข้อมูลจาก Exception เนื่องจากกรณีเหล่านี้มีความสำคัญต่อความถูกต้อง ความมั่นคงปลอดภัย และการตรวจสอบย้อนกลับของการสร้างพรรคการเมือง
