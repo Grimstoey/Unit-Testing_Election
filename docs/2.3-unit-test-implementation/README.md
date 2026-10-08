@@ -46,4 +46,6 @@ npm run build
 npm test
 ```
 
+เมื่อต้องการวัด Coverage ให้รัน `npm run test:coverage` หลังตั้งค่า Environment และ Generate Prisma Client แล้ว อ่านวิธีวัดและการแปลผลได้ที่ [Coverage Report](./coverage-report.md)
+
 สามารถดูผลที่ยืนยันแล้วและข้อจำกัดของการทดสอบได้ใน [Test Execution Report](./test-execution-report.md)
