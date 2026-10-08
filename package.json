@@ -8,7 +8,7 @@
     "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "seed": "prisma db seed",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsx --test tests/*.test.ts"
   },
   "type": "commonjs",
   "_moduleAliases": {
