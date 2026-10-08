@@ -1,26 +1,47 @@
-# 2.3 การเขียน Unit Test และหลักฐานการทดสอบ
+# 2.3 การพัฒนา Unit Tests
 
-## รายการบังคับตามโจทย์
-- [ ] **Happy Path:** มีกรณีที่ทำงานสำเร็จและผลการทดสอบผ่านอย่างน้อยหนึ่งกรณี
-- [ ] **Failure Path:** มีกรณีที่ข้อมูลผิดหรือเกิดข้อผิดพลาดอย่างน้อยหนึ่งกรณี
-- [ ] **Stub:** ใช้ Dependency จำลองที่คืนค่าคงที่
-- [ ] **Spy:** ตรวจสอบจำนวนครั้งและพารามิเตอร์ที่ใช้เรียกฟังก์ชัน
-- [ ] **Mock:** ใช้ Dependency จำลองเพื่อตรวจสอบพฤติกรรมหรือการโต้ตอบ
-- [ ] **Faker:** ใช้ `@faker-js/faker` เพื่อสร้าง Test Data แบบเปลี่ยนแปลงได้
-- [ ] เขียนและรันกรณีเพิ่มเติมที่มีเหตุผลจาก Requirements และ Risk
-- [ ] เก็บหลักฐานผลรันทดสอบจริง
+## 1. เครื่องมือทดสอบ
 
-ช่องทำเครื่องหมายยังไม่ถูกติ๊ก เพราะต้องยืนยัน **ผลการรันจริง** ก่อน ไม่ใช่ดูเพียงว่ามีไฟล์ Test
+โปรเจกต์ใช้ TypeScript, Node.js Test Runner และ `tsx` ในการรันไฟล์ `*.test.ts` โดยใช้ `node:assert/strict` สำหรับ Assertions และ `node:test` สำหรับสร้าง Test และ Test Double ส่วนข้อมูลสุ่มใช้ `@faker-js/faker`
 
-## ความหมายของ Stub, Spy และ Mock
-- **Stub:** ทำหน้าที่ส่งค่าตอบกลับที่กำหนดไว้ล่วงหน้า เช่น คืนข้อมูลพรรคจำลอง โดยไม่ต้องอ่านฐานข้อมูล
-- **Spy:** บันทึกว่าฟังก์ชันถูกเรียกหรือไม่ จำนวนกี่ครั้ง และได้รับ Argument อะไร เพื่อใช้ตรวจสอบการโต้ตอบ
-- **Mock:** จำลองการทำงานของ Dependency และกำหนดพฤติกรรมหรือความคาดหวังเพื่อนำมาทดสอบ
+คำสั่งรัน:
 
-ทั้งสามอย่างเป็นรูปแบบการใช้ **Test Double** และในบาง Framework อาจใช้เครื่องมือเดียวกันสร้างได้หลายรูปแบบ
+```bash
+npm test
+```
 
-## หลักฐานที่ต้องบันทึก
-ระบุเวอร์ชันเครื่องมือ คำสั่งที่รัน วันที่ทดสอบ จำนวนผ่าน/ไม่ผ่าน/ข้าม ปัญหาที่พบและการแก้ไข รวมถึง Commit SHA ที่ทดสอบ การมีไฟล์ Test บน GitHub เพียงอย่างเดียว **ไม่ใช่หลักฐานว่า Test ผ่าน**
+## 2. การทดสอบตามข้อกำหนดการบ้าน
 
-## สถานะงาน
-จัดโครงสร้างเอกสารและเขียน Test บางส่วนแล้ว แต่ยังไม่ยืนยันการรัน ไม่มีผลทดสอบที่สามารถอ้างว่า Pass ได้ ณ ขั้นตอนนี้
+| ประเภท | ตัวอย่างการใช้งาน | ไฟล์ที่มีโค้ด |
+|---|---|---|
+| Happy Path | UT-CP-001 ตรวจข้อมูลถูกต้อง | `tests/party-validation.test.ts` |
+| Failure | UT-CP-002 ตรวจไม่ส่งชื่อพรรค | `tests/party-validation.test.ts` |
+| Stub | UT-CP-015 จำลองค่าพรรคที่บันทึกสำเร็จ | `tests/create-party-use-case.test.ts` |
+| Spy | UT-CP-016 ตรวจว่า Dependency ไม่ถูกเรียกเมื่อข้อมูลไม่ถูกต้อง | `tests/create-party-use-case.test.ts` |
+| Mock | UT-CP-017 จำลองฟังก์ชันบันทึกและตรวจ Argument | `tests/create-party-use-case.test.ts` |
+| Faker | UT-CP-018 สร้าง Test Data แบบสุ่มห้าชุด | `tests/party-faker.test.ts` |
+
+**Stub** ให้ค่าตอบกลับที่กำหนดไว้แทน Dependency จริง **Spy** ใช้บันทึกจำนวนและรายละเอียดการเรียกฟังก์ชัน ส่วน **Mock** ใช้กำหนดพฤติกรรมที่คาดหวังพร้อมตรวจ Interaction ทั้งสามแบบเป็นรูปแบบ Test Double ซึ่งอาจใช้งานร่วมกับ API ของ `node:test` ได้
+
+## 3. การทดสอบเพิ่มเติม
+
+ชุดทดสอบครอบคลุมการตรวจสอบ Token, EC Role, การแมป Audit Fields, Prisma P2002 และ Internal Server Error โดยอยู่ในไฟล์ `tests/auth-and-role.test.ts` และ `tests/party-persistence-and-errors.test.ts`
+
+## 4. วิธีการทดสอบ
+
+1. ติดตั้ง Dependency ด้วย `npm ci`
+2. กำหนด `DIRECT_URL` สำหรับโหลด Prisma Config
+3. สร้าง Prisma Client ด้วย `npx prisma generate`
+4. ตรวจสอบการ Compile ด้วย `npm run build`
+5. รันชุด Unit Tests ด้วย `npm test`
+
+ตัวอย่าง URL สำหรับการรัน Unit Tests ที่จำลองฐานข้อมูล (ห้ามใช้กับ Migration จริง):
+
+```bash
+export DIRECT_URL="postgresql://test:test@localhost:5432/election_test"
+npx prisma generate
+npm run build
+npm test
+```
+
+สามารถดูผลที่ยืนยันแล้วและข้อจำกัดของการทดสอบได้ใน [Test Execution Report](./test-execution-report.md)
