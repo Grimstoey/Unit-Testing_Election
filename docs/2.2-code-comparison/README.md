@@ -1,28 +1,40 @@
-# 2.2 การเปรียบเทียบโค้ดก่อนและหลังปรับปรุงตามหลัก V&V
+# 2.2 การเปรียบเทียบ Source Code ก่อนและหลังใช้หลัก V&V
 
-## Branch ที่ใช้เปรียบเทียบ
-- **`main`** — เก็บโค้ดต้นฉบับที่ใช้เป็นฐานเปรียบเทียบ ไม่แก้ไขสำหรับงานนี้
-- **`vnv/election-unit-testing`** — เก็บการพัฒนาและเอกสาร Unit Testing
+## ขอบเขตการเปรียบเทียบ
 
-ดูความแตกต่างผ่าน GitHub Compare (`main...vnv/election-unit-testing`) หรือใช้คำสั่ง:
+ใช้ `main` เป็น Source Code ต้นฉบับของงาน Backend และ `vnv/election-unit-testing` เป็นเวอร์ชันที่เพิ่มเติม Validation, Dependency Injection และ Automated Unit Testing โดยไม่ Merge เปลี่ยนแปลงกลับเข้า `main`
+
+สามารถตรวจสอบความแตกต่างด้วยคำสั่ง:
+
 ```bash
-git diff main...vnv/election-unit-testing
+git fetch origin
+git diff origin/main...origin/vnv/election-unit-testing
 ```
 
-จะไม่ Merge งานกลับเข้า `main` ระหว่างทำการบ้าน
+## สิ่งที่คงเดิม
 
-## สิ่งที่ตรวจพบในโค้ดต้นฉบับ (main)
-| ไฟล์ | พฤติกรรมเดิม | ประเด็นที่ควรพิจารณาตามหลัก V&V |
-|---|---|---|
-| `package.json` | `npm test` แจ้ง `no test specified` | ยังไม่มีชุด Unit Test ที่รันได้ |
-| `src/routes/ECRoutes.ts` | `POST /parties` ใช้ `requireAuth` และ `requireRole(RoleName.EC)` | ต้องรักษาการตรวจสอบตัวตนและสิทธิ์เดิม |
-| `src/controllers/PartyController.ts` | อ่าน name, logoUrl, policy และ user.id แล้วเรียก Service | ค่าว่างอาจถูกส่งต่อไปยัง Service |
-| `src/services/PartyService.ts` | เรียก Repository เพื่อสร้างพรรคทันทีและคืนผลสำเร็จ | ไม่มี Validation หรือการตัดช่องว่างใน Service |
-| `src/repositories/PartyRepository.ts` | ใช้ Prisma เพื่อบันทึกและกำหนดรหัสผู้สร้าง/ผู้แก้ไข | ควรแยกการทดสอบออกจากฐานข้อมูลจริง |
-| `prisma/schema.prisma` | ชื่อพรรคเป็น Unique และมีฟิลด์ข้อมูล/เวลา | รักษา Database Constraint พร้อมตรวจข้อมูลก่อนบันทึก |
-| `src/middlewares/PrismaErrorHandler.ts` | จัดการ Prisma P2002 ด้วย 409 และข้อผิดพลาดเชื่อมต่อด้วย 500 | ต้องทดสอบการส่งสถานะและการไม่เปิดเผยข้อมูลอ่อนไหว |
+- Endpoint `POST /ec/parties` และลำดับ `requireAuth` → `requireRole(RoleName.EC)` → Controller
+- โครงสร้างพรรคใน Prisma Schema เช่น `name @unique`, `logoUrl`, `policy` และฟิลด์ Audit
+- การจัดการข้อผิดพลาด P2002 เป็น 409 ที่ `PrismaErrorHandler.ts`
+- หลักการที่ Repository ใช้ Prisma บันทึกข้อมูลพรรค
 
-## วิธีจัดทำรายงานเปรียบเทียบฉบับสมบูรณ์
-สำหรับทุกไฟล์ที่แก้ไข จะอธิบาย (1) สิ่งที่คงเดิม (2) จุดที่เปลี่ยนจาก Before เป็น After (3) ข้อกำหนดหรือปัญหาที่เกี่ยวข้อง (4) Test Case ที่ตรวจสอบ และ (5) ผลลัพธ์จริงพร้อมข้อดีและข้อจำกัด
+## สิ่งที่เปลี่ยนแปลง
 
-**สถานะ:** นี่เป็นข้อมูลสำรวจโค้ดเดิมและแผนการเปรียบเทียบ ยังไม่ใช่รายงานผลการทดสอบฉบับสมบูรณ์
+| ไฟล์ | ก่อนปรับปรุง | หลังปรับปรุง | เหตุผล |
+|---|---|---|---|
+| `package.json` | `npm test` ไม่เรียก Test Suite | ใช้ `tsx --test tests/*.test.ts` และมี Faker | ทำให้ทดสอบซ้ำด้วยคำสั่งเดียวได้ |
+| `package-lock.json` | ไม่มี Faker | ระบุ Faker เวอร์ชันที่ใช้ | ให้ Dependency สอดคล้องกัน |
+| `src/utils/validateCreateParty.ts` | ไม่มีหน่วยตรวจข้อมูลนี้ | เพิ่มฟังก์ชัน Validation | ตรวจ Required Fields และช่องว่างตาม FR-10–12 |
+| `src/services/createPartyUseCase.ts` | ไม่มีการแยก Use Case นี้ | รับ `writeParty` เป็น Dependency | ทดสอบด้วย Stub/Spy/Mock ได้ |
+| `src/services/PartyService.ts` | เรียก Repository ตรง | เรียก Use Case ก่อนบันทึก | ตรวจข้อมูลก่อนเรียก Persistence |
+| `src/middlewares/AuthMiddleware.ts` | เรียก `meService` โดยตรง | ใช้ `makeRequireAuth` พร้อมฉีด Lookup | แยก Unit Test ออกจากการยืนยันตัวตนจริง |
+| `src/repositories/PartyRepository.ts` | ฟังก์ชันสร้างพรรคเรียก Prisma โดยตรง | แยก `makeCreateParty` และยังใช้ Prisma จริงใน Production | ตรวจ Audit Mapping ด้วย Mock |
+| `tests/*.test.ts` | ไม่มี Unit Tests ชุดนี้ | เพิ่ม Test Cases ของ Validation, Role, Authentication, Persistence, Error, Faker | ตรวจผลลัพธ์และ Interaction |
+
+การเปลี่ยนแปลงเน้น **Testability** และตรวจจับ Regression โดยคงโครงสร้าง API, Schema และ Business Rules เดิมเป็นหลัก ไม่ใช่การเปลี่ยนฟีเจอร์หรือขยายขอบเขตระบบโดยไม่มี Requirement
+
+## ผลการตรวจสอบ
+
+การ Build `tsc && tsc-alias` และ Unit Tests 11 กรณีแรกมีผลสำเร็จที่บันทึกไว้ใน [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) การเปลี่ยนแปลงและ Tests ที่เพิ่มหลังจากนั้นต้องอ้างอิงผลรันทดสอบฉบับล่าสุด ไม่ถือว่าผ่านโดยอัตโนมัติ
+
+ดูรายละเอียดการปรับปรุงที่ [vnv-improvements.md](./vnv-improvements.md)
