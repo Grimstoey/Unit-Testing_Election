@@ -1,25 +1,29 @@
-# Unit Test Execution Report
+# รายงานการรัน Unit Tests (Test Execution Report)
 
-## Current implementation status
+## สถานะปัจจุบัน
+ไฟล์ที่เพิ่มหรือปรับปรุงบน Branch `vnv/election-unit-testing` ได้แก่
 
-Source committed on `vnv/election-unit-testing`:
-- `src/utils/validateCreateParty.ts`: checks required fields, rejects missing/null/empty/whitespace-only, trims name and policy.
-- `src/services/createPartyUseCase.ts`: dependency-injected creation logic, so persistence can be replaced in unit tests.
-- `src/services/PartyService.ts`: delegates creation to the testable use case.
-- `tests/party-validation.test.ts`: eight named tests UT-CP-001–008.
-- `tests/create-party-use-case.test.ts`: three named tests UT-CP-015–017 demonstrating Stub, Spy and Mock.
-- `package.json`: `npm test` runs `tsx --test tests/*.test.ts`.
+| ไฟล์ | สิ่งที่ดำเนินการ |
+|---|---|
+| `src/utils/validateCreateParty.ts` | ตรวจข้อมูลบังคับ ปฏิเสธ null, ค่าว่าง และช่องว่างล้วน พร้อมตัดช่องว่างชื่อและนโยบาย |
+| `src/services/createPartyUseCase.ts` | ใช้ Dependency Injection เพื่อจำลองการบันทึกโดยไม่ใช้ฐานข้อมูลจริง |
+| `src/services/PartyService.ts` | ปรับการสร้างพรรคให้เรียก Use Case ที่แยกออกมา |
+| `tests/party-validation.test.ts` | เขียน Test UT-CP-001–008 รวม 8 กรณี |
+| `tests/create-party-use-case.test.ts` | เขียน Test UT-CP-015–017 รวม 3 กรณีสำหรับ Stub, Spy และ Mock |
+| `package.json` | ตั้งค่า `npm test` เป็น `tsx --test tests/*.test.ts` |
 
-**Execution status: NOT YET VERIFIED.** The connected GitHub source was available, but the execution environment could not clone it due to unavailable outbound DNS/network access. No claims are made about pass counts or compilation until the suite is executed. This is not the final submission report.
+**ผลการรัน: ยังไม่ยืนยัน (NOT VERIFIED)**
 
-## Pending assignment work
-- Implement authentication and authorization unit tests UT-CP-009–011.
-- Implement duplicate/error handling and audit mapping tests UT-CP-012–014.
-- Add an authentic `@faker-js/faker` dependency, update `package-lock.json` consistently, and implement UT-CP-018. Do not manually edit the lock without resolution.
-- Run `npm ci`, `npm run build`, and `npm test`, fix failures, and record actual output.
-- Update root README with exact reproducible setup instructions and final before/after comparison.
+สามารถอ่านโค้ดผ่าน GitHub ที่เชื่อมไว้ได้ แต่ก่อนหน้านี้ไม่สามารถ Clone Repository มารันในสภาพแวดล้อมทดสอบได้เนื่องจากการเชื่อมต่อเครือข่าย จึง **ยังไม่มีหลักฐาน Pass/Fail จริง** รวมถึงยังไม่อ้างว่า Build ผ่าน
 
-## Verification to perform on local clone
+## งานที่ยังต้องดำเนินการ
+1. เพิ่ม Authentication และ Authorization Tests (UT-CP-009–011)
+2. เพิ่มการตรวจ Audit Fields, Duplicate และ Error Handling (UT-CP-012–014)
+3. ติดตั้ง `@faker-js/faker` อย่างถูกต้อง ปรับ `package-lock.json` ให้สอดคล้อง และเขียน UT-CP-018
+4. รัน `npm ci`, `npm run build`, `npm test` และแก้ไขข้อผิดพลาดหากพบ
+5. ปรับปรุง README หลัก และจัดทำ Code Comparison ฉบับสมบูรณ์
+
+## คำสั่งสำหรับตรวจสอบบนเครื่อง
 ```bash
 git fetch origin
 git switch vnv/election-unit-testing
@@ -28,4 +32,4 @@ npm run build
 npm test
 ```
 
-When results exist, record Node/npm versions, commit SHA, commands, passed/failed/skipped counts, defect fixes, and screenshots or logs.
+เมื่อมีผลทดสอบแล้ว ต้องบันทึก Node.js/npm Version, Commit SHA, ผล Pass/Fail/Skip, รายละเอียดกรณีที่ล้มเหลว และหลักฐานประกอบ ไม่ให้สมมติผลขึ้นเอง
