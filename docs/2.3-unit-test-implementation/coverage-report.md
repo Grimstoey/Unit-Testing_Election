@@ -89,9 +89,50 @@ Function Coverage ของ `PartyRepository.ts` ยังคง 47.83% เน�
 
 ทั้งสองสภาพแวดล้อมใช้ Runtime และระบบปฏิบัติการต่างกัน ความแตกต่างอาจเกี่ยวข้องกับเวอร์ชัน Node.js/V8 หรือ Source Mapping ระหว่าง Runtime Transformation ของ TypeScript แต่ข้อมูลที่มีไม่สามารถระบุสาเหตุแน่ชัด จึงรายงานค่าจากแต่ละสภาพแวดล้อมแยกกัน และไม่กล่าวอ้างว่าเป็นการเปลี่ยนแปลงคุณภาพของ Source Code
 
-**หมายเหตุ:** ตัวเลขหลังเพิ่ม Tests ในตารางก่อน–หลังเป็นผล GitHub Actions เท่านั้น ต้องรันทดสอบใหม่บน Windows เพื่อทราบผลของชุด 28 กรณีในสภาพแวดล้อมนั้น จึงไม่เปรียบเทียบ Windows ชุดเก่ากับ Linux ชุดใหม่ในฐานะผลก่อน–หลัง
+**หมายเหตุ:** ตารางก่อน–หลังของ GitHub Actions และ Windows แสดงการทดสอบในสภาพแวดล้อมเดียวกันตามลำดับ ส่วนตารางเปรียบเทียบข้ามสภาพแวดล้อมใช้ชุด 28 Tests เหมือนกัน
 
 ---
+
+## ผลการวัด Coverage บน Windows หลังเพิ่ม Tests (28 กรณี)
+
+ทดสอบวันที่ 8 ตุลาคม 2026 ด้วย Git Bash บน Windows, Node.js v22.14.0 โดยใช้คำสั่ง `npm run build` และ `npm run test:coverage` หลังดึงโค้ดชุด `UT-CP-001`–`UT-CP-028` แล้ว ทั้ง Build และ Tests ผ่าน: **28 Passed, 0 Failed, 0 Skipped** รวมเวลา **910.1345 ms**
+
+| Source File | Line (%) | Branch (%) | Function (%) |
+|---|---:|---:|---:|
+| `AuthMiddleware.ts` | 100.00 | 95.45 | 90.00 |
+| `PrismaErrorHandler.ts` | 91.14 | 79.31 | 100.00 |
+| `RoleMiddleware.ts` | 100.00 | 100.00 | 100.00 |
+| `PartyRepository.ts` | 78.26 | 92.86 | 47.83 |
+| `createPartyUseCase.ts` | 92.86 | 92.31 | 100.00 |
+| `validateCreateParty.ts` | 97.22 | 94.44 | 100.00 |
+| **รวมเฉพาะไฟล์ที่เลือก** | **89.86** | **90.99** | **80.60** |
+
+### เปรียบเทียบผลปัจจุบันของทั้งสองสภาพแวดล้อม
+
+| Metric (28 Tests) | GitHub Actions (Linux) | Windows | ผลต่าง (จุดเปอร์เซ็นต์) |
+|---|---:|---:|---:|
+| Line Coverage | 90.88% | 89.86% | 1.02 |
+| Branch Coverage | 90.99% | 90.99% | 0.00 |
+| Function Coverage | 80.60% | 80.60% | 0.00 |
+| Tests Passed | 28/28 | 28/28 | — |
+
+### ผลก่อน–หลังบน Windows
+
+| Metric | 21 Tests | 28 Tests | เปลี่ยนแปลง |
+|---|---:|---:|---:|
+| Line Coverage | 85.47% | **89.86%** | +4.39 จุดเปอร์เซ็นต์ |
+| Branch Coverage | 90.29% | **90.99%** | +0.70 จุดเปอร์เซ็นต์ |
+| Function Coverage | 80.60% | **80.60%** | ไม่เปลี่ยนแปลง |
+
+```mermaid
+xychart-beta
+  title "Coverage บน Windows ก่อนและหลังเพิ่ม Tests"
+  x-axis ["Line ก่อน", "Line หลัง", "Branch ก่อน", "Branch หลัง", "Function ก่อน", "Function หลัง"]
+  y-axis "ร้อยละ" 0 --> 100
+  bar [85.47, 89.86, 90.29, 90.99, 80.60, 80.60]
+```
+
+Line Coverage ของไฟล์บางส่วนต่างกันระหว่าง Linux และ Windows แม้ Branch/Function รวมเท่ากัน ความแตกต่างอาจสัมพันธ์กับเวอร์ชัน Node.js/V8 หรือ TypeScript Source Mapping แต่ยังไม่มีหลักฐานชี้สาเหตุแน่นอน จึงแยกผลตามสภาพแวดล้อม ไม่อ้างว่าผลต่างนี้เป็นข้อบกพร่องของ Business Logic
 
 ## ข้อสรุปด้าน V&V
 
