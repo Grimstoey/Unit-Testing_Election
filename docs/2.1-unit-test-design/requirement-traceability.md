@@ -1,20 +1,20 @@
-# Requirements Traceability — Create Political Party
+# ตารางเชื่อมโยงข้อกำหนดกับการทดสอบ (Requirements Traceability Matrix)
 
-Source: supplied `Feature.docx`, UC-EC-01, FR-01–FR-12, BR-01–BR-05, legacy `TC-CP-001`–`TC-CP-013`.
+อ้างอิง `Feature.docx` ซึ่งกำหนด UC-EC-01, FR-01–FR-12 และ BR-01–BR-05 ร่วมกับ Test Cases เดิม `TC-CP-001`–`TC-CP-013`
 
-| Requirement | Legacy API case(s) | Proposed unit case(s) |
-|---|---|---|
-| FR-01 Create party for EC | TC-CP-001 | UT-CP-001, 018 |
-| FR-02 Authenticated user only | TC-CP-006, 007 | UT-CP-009, 010 |
-| FR-03 EC role only | TC-CP-008 | UT-CP-011 |
-| FR-04 Receive party fields | TC-CP-001–004 | UT-CP-001–004 |
-| FR-05 No duplicate names | TC-CP-005 | UT-CP-013 |
-| FR-06 Persist party | TC-CP-001 | UT-CP-001, 015, 017 |
-| FR-07 Creator and creation timestamp | TC-CP-009 | UT-CP-012, 017 |
-| FR-08 Respond on success | TC-CP-001 | UT-CP-001, 015 |
-| FR-09 Respond on failure | TC-CP-002–008, 010–013 | UT-CP-002–014 |
-| FR-10 Trim surrounding whitespace | TC-CP-010, 011, 013 | UT-CP-005, 006, 008 |
-| FR-11 Reject null, empty, whitespace-only | TC-CP-010–013 | UT-CP-002–008 |
-| FR-12 Require name, logo and policy | TC-CP-002–004, 010–013 | UT-CP-002–007 |
+| Requirement | รายละเอียดข้อกำหนด | API Test เดิม | Unit Test ที่ออกแบบ |
+|---|---|---|---|
+| FR-01 | อนุญาตให้เจ้าหน้าที่ กกต. สร้างพรรค | TC-CP-001 | UT-CP-001, 018 |
+| FR-02 | ตรวจสอบการเข้าสู่ระบบ | TC-CP-006, 007 | UT-CP-009, 010 |
+| FR-03 | ตรวจสอบสิทธิ์ กกต. | TC-CP-008 | UT-CP-011 |
+| FR-04 | รับชื่อพรรค โลโก้ และนโยบาย | TC-CP-001–004 | UT-CP-001–004 |
+| FR-05 | ป้องกันการสร้างชื่อพรรคซ้ำ | TC-CP-005 | UT-CP-013 |
+| FR-06 | บันทึกข้อมูลพรรค | TC-CP-001 | UT-CP-001, 015, 017 |
+| FR-07 | บันทึกข้อมูลผู้สร้างและวันเวลาที่สร้าง | TC-CP-009 | UT-CP-012, 017 |
+| FR-08 | แจ้งผลเมื่อสร้างสำเร็จ | TC-CP-001 | UT-CP-001, 015 |
+| FR-09 | แจ้งผลเมื่อสร้างไม่สำเร็จ | TC-CP-002–008, 010–013 | UT-CP-002–014 |
+| FR-10 | ตัดช่องว่างต้นและท้าย | TC-CP-010, 011, 013 | UT-CP-005, 006, 008 |
+| FR-11 | ปฏิเสธ null, String ว่าง หรือช่องว่างล้วน | TC-CP-010–013 | UT-CP-002–008 |
+| FR-12 | กำหนดชื่อพรรค โลโก้ และนโยบายเป็นข้อมูลบังคับ | TC-CP-002–004, 010–013 | UT-CP-002–007 |
 
-**Important:** The relationship is a *design mapping*, not proof of coverage. Coverage is earned only after the corresponding automated test exists and runs. The legacy API cases and new unit cases are different levels of testing.
+**คำอธิบาย:** ตารางนี้แสดงการเชื่อมโยงในขั้นออกแบบ ไม่ใช่ผลยืนยัน Test Coverage การยืนยัน Coverage ต้องอาศัยผลรันจริงและตรวจสอบการทดสอบแต่ละ Requirement โดยแยก Unit Test ออกจาก API Test
