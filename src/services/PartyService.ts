@@ -1,4 +1,4 @@
-import { validateCreateParty } from '../utils/validateCreateParty'
+import { createPartyUseCase } from './createPartyUseCase'
 import {
   getAllParty,
   getAllPartyWithPagination,
@@ -31,27 +31,7 @@ export const createPartyService = async (
   policy: string,
   userId: number
 ) => {
-  const validated = validateCreateParty({ name, logoUrl, policy })
-  if (!validated.ok) {
-    return {
-      ok: false as const,
-      status: 400,
-      message: validated.message,
-    }
-  }
-
-  const result = await createParty(
-    validated.data.name,
-    validated.data.logoUrl,
-    validated.data.policy,
-    userId,
-  )
-
-  return {
-    ok: true as const,
-    status: 200,
-    data: result,
-  }
+  return createPartyUseCase({ name, logoUrl, policy }, userId, createParty)
 }
 
 export async function deletePartyService(id: number) {
