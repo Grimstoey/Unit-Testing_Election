@@ -96,7 +96,30 @@ pie showData
 
 กราฟแสดงเฉพาะจำนวนกรณีที่ผ่านหรือล้มเหลว ไม่ใช่ค่า Code Coverage
 
-## 6. ชุดทดสอบใน Source Code ปัจจุบัน
+## 6. การทดสอบล่าสุด (28 กรณี)
+
+ขยายชุดทดสอบโดยเพิ่ม `UT-CP-022` ถึง `UT-CP-028` เพื่อทดสอบ Prisma Error Mapping, การปกปิด Metadata, Error Forwarding, Bearer Token ที่เป็นช่องว่าง และ Persistence Failure
+
+| รายการ | GitHub Actions | Windows / Git Bash |
+|---|---:|---:|
+| Tests | 28 | 28 |
+| Passed | **28** | **28** |
+| Failed | 0 | 0 |
+| Skipped | 0 | 0 |
+| Duration | 1859.190638 ms | 910.1345 ms |
+| Build | PASS | PASS |
+
+**หลักฐาน GitHub Actions:** [Run #37767512280](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37767512280)  
+**บน Windows:** Node.js v22.14.0, รัน `npm run build` และ `npm run test:coverage` สำเร็จ โดยผล Coverage ฉบับละเอียดอยู่ใน [Coverage Report](./coverage-report.md)
+
+```mermaid
+pie showData
+  title Unit Test Results — 28 cases (Windows)
+  "Passed" : 28
+  "Failed" : 0
+```
+
+## 7. ชุดทดสอบใน Source Code ปัจจุบัน
 
 | ไฟล์ | กรณีที่มีโค้ด |
 |---|---|
@@ -105,10 +128,11 @@ pie showData
 | `tests/party-persistence-and-errors.test.ts` | UT-CP-012–014 |
 | `tests/create-party-use-case.test.ts` | UT-CP-015–017 |
 | `tests/party-faker.test.ts` | UT-CP-018 |
+| `tests/coverage-gap.test.ts` | UT-CP-022–028 |
 
-ผล 11 Tests ในหัวข้อก่อนหน้าเป็นผลการทดสอบรอบแรก ส่วนผลล่าสุด 21 Tests ได้รับการยืนยันจาก GitHub Actions Run ที่อ้างอิงในหัวข้อ 4
+ผล 11 และ 21 Tests ในหัวข้อก่อนหน้าเป็นผลการทดสอบรอบก่อน ส่วนผลล่าสุด 28 Tests แสดงในหัวข้อ 6
 
-## 7. การทำซ้ำการทดสอบ
+## 8. การทำซ้ำการทดสอบ
 
 ```bash
 npm ci
@@ -122,6 +146,6 @@ npm test
 
 ค่า `DIRECT_URL` ในตัวอย่างใช้เพื่อโหลด Prisma Config สำหรับ Unit Testing เท่านั้น ไม่ใช่ฐานข้อมูลที่มีอยู่จริงหรือใช้รัน Migration
 
-## 8. ขอบเขตของผลทดสอบ
+## 9. ขอบเขตของผลทดสอบ
 
-Unit Tests ที่ใช้ Dependency จำลองไม่ยืนยันการเชื่อมต่อฐานข้อมูล การบังคับ Unique Constraint โดย PostgreSQL การสร้าง Timestamp จากฐานข้อมูลจริง และพฤติกรรมหน้าเว็บแบบ End-to-End ส่วน Test Pass Rate และ Code Coverage เป็นคนละตัวชี้วัด โดยยังไม่มีค่า Coverage ที่วัดยืนยันในรายงานนี้
+Unit Tests ที่ใช้ Dependency จำลองไม่ยืนยันการเชื่อมต่อฐานข้อมูล การบังคับ Unique Constraint โดย PostgreSQL การสร้าง Timestamp จากฐานข้อมูลจริง และพฤติกรรมหน้าเว็บแบบ End-to-End ส่วน Test Pass Rate และ Code Coverage เป็นคนละตัวชี้วัด โดยค่า Coverage ที่วัดยืนยันแล้วอยู่ใน [Coverage Report](./coverage-report.md)
