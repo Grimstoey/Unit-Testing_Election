@@ -45,7 +45,26 @@ npm test
 
 ผลผ่าน 11/11 หมายถึงกรณีทดสอบที่รันในผลบันทึกนี้ ไม่ใช่ Code Coverage 100% และไม่ใช่การยืนยันว่าระบบ Election ทุกฟีเจอร์ทำงานถูกต้อง
 
-## 4. ชุดทดสอบใน Source Code ปัจจุบัน
+## 4. ผลการทดสอบจาก GitHub Actions
+
+ชุดทดสอบปัจจุบันถูกตรวจสอบอัตโนมัติด้วย GitHub Actions บน Ubuntu และ Node.js 22 โดยดำเนินการตามลำดับ `npm ci`, `npx prisma generate`, `npm run build` และ `npm test` ซึ่งทุกขั้นตอนสำเร็จ
+
+**หลักฐาน:** [Election Unit Tests — GitHub Actions Run #37763536100](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37763536100)  
+**Commit ที่ตรวจสอบ:** `90bf85727eb6f7745980588729cc002f583cbcda`  
+**ผล Workflow:** SUCCESS
+
+| รายการ | ผลลัพธ์ |
+|---|---:|
+| Tests | **21** |
+| Passed | **21** |
+| Failed | **0** |
+| Skipped | **0** |
+| ระยะเวลารวม | **1318.302429 ms** |
+| TypeScript Build | **PASS** |
+
+ผลทดสอบนี้ครอบคลุม `UT-CP-001` ถึง `UT-CP-021` รวมกรณี Authentication, Authorization, Audit Mapping, Duplicate Error, Internal Error และ Faker ที่เพิ่มจากชุดเดิม โดยอ้างอิงผลจาก Workflow จริง ไม่ใช่การอนุมานจากไฟล์ Test
+
+## 5. ชุดทดสอบใน Source Code ปัจจุบัน
 
 | ไฟล์ | กรณีที่มีโค้ด |
 |---|---|
@@ -55,9 +74,9 @@ npm test
 | `tests/create-party-use-case.test.ts` | UT-CP-015–017 |
 | `tests/party-faker.test.ts` | UT-CP-018 |
 
-**การยืนยันผลสำหรับชุดโค้ดปัจจุบัน:** ผล 11 Tests ข้างต้นเป็นผลก่อนเพิ่มไฟล์ทดสอบทั้งหมดในตารางนี้ ส่วนผลการรันรวมของเวอร์ชันล่าสุดให้ตรวจสอบจาก [GitHub Actions](https://github.com/Grimstoey/Unit-Testing_Election/actions/workflows/unit-tests.yml) โดยตรง ไม่ใช้ผลเดิมเพื่ออ้างว่ากรณีใหม่ผ่าน
+ผล 11 Tests ในหัวข้อก่อนหน้าเป็นผลการทดสอบรอบแรก ส่วนผลล่าสุด 21 Tests ได้รับการยืนยันจาก GitHub Actions Run ที่อ้างอิงในหัวข้อ 4
 
-## 5. การทำซ้ำการทดสอบ
+## 6. การทำซ้ำการทดสอบ
 
 ```bash
 npm ci
@@ -69,6 +88,6 @@ npm test
 
 ค่า `DIRECT_URL` ในตัวอย่างใช้เพื่อโหลด Prisma Config สำหรับ Unit Testing เท่านั้น ไม่ใช่ฐานข้อมูลที่มีอยู่จริงหรือใช้รัน Migration
 
-## 6. ขอบเขตของผลทดสอบ
+## 7. ขอบเขตของผลทดสอบ
 
 Unit Tests ที่ใช้ Dependency จำลองไม่ยืนยันการเชื่อมต่อฐานข้อมูล การบังคับ Unique Constraint โดย PostgreSQL การสร้าง Timestamp จากฐานข้อมูลจริง และพฤติกรรมหน้าเว็บแบบ End-to-End ส่วน Test Pass Rate และ Code Coverage เป็นคนละตัวชี้วัด โดยยังไม่มีค่า Coverage ที่วัดยืนยันในรายงานนี้
