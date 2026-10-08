@@ -25,7 +25,6 @@
 | UT-CP-019 | Token ถูกต้องและ Lookup คืนข้อมูลผู้ใช้ | บันทึก user ลง Request และเรียก `next()` | Happy Path, FR-02 |
 | UT-CP-020 | ผู้ใช้มี Role `EC` | เรียก `next()` | Happy Path, FR-03 |
 | UT-CP-021 | Lookup โยน Exception จาก Token | ตอบ HTTP 401 โดยไม่เรียก `next()` | Failure, FR-02 |
-
 | UT-CP-022 | Prisma Known Error P2025 | ตอบ 404 Not Found | Error Decision, FR-09 |
 | UT-CP-023 | Prisma Known Error P2003 | ตอบ 400 Foreign Key Constraint | Error Decision, FR-09 |
 | UT-CP-024 | Prisma Known Error อื่น | ตอบ 400 Database error | Error Decision, FR-09 |
