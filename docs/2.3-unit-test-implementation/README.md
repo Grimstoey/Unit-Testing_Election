@@ -39,6 +39,8 @@ npm test
 
 ```bash
 export DIRECT_URL="postgresql://test:test@localhost:5432/election_test"
+export JWT_SECRET="unit-test-only-secret-not-for-production"
+export JWT_EXPIRES_IN="1h"
 npx prisma generate
 npm run build
 npm test
