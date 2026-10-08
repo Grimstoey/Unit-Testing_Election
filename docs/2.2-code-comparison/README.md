@@ -52,6 +52,6 @@ flowchart LR
 
 ## ผลการตรวจสอบ
 
-ตรวจสอบเวอร์ชันที่มี Unit Tests ครบ 21 กรณีด้วย GitHub Actions แล้ว: `npm ci`, `npx prisma generate`, `npm run build` และ `npm test` ผ่านทั้งหมด (21 Passed, 0 Failed) ตาม [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) และ [หลักฐานการรัน](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37763536100)
+ชุดทดสอบล่าสุดผ่าน **28/28** ทั้งบน GitHub Actions และ Windows พร้อมผล Coverage เฉพาะ 6 ไฟล์ที่เลือกวัด รายละเอียดอยู่ใน [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) และ [Coverage Report](../2.3-unit-test-implementation/coverage-report.md) โดยมี [หลักฐาน GitHub Actions](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37767512280)
 
 ดูรายละเอียดการปรับปรุงที่ [vnv-improvements.md](./vnv-improvements.md)
