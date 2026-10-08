@@ -1,20 +1,26 @@
-# 2.3 Unit Test Implementation — Checklist and evidence
+# 2.3 การเขียน Unit Test และหลักฐานการทดสอบ
 
-## Mandatory demonstration
-- [ ] Happy Path: at least one passing positive case
-- [ ] Failure Path: at least one passing rejection/error case
-- [ ] Stub: fixed fake return value from a collaborator
-- [ ] Spy: record and assert calls/arguments to a collaborator
-- [ ] Mock: replace a dependency with a behavioral expectation
-- [ ] Faker: generate dynamic test data with `@faker-js/faker`
-- [ ] Additional justified tests implemented
-- [ ] Run actual tests and attach honest results
+## รายการบังคับตามโจทย์
+- [ ] **Happy Path:** มีกรณีที่ทำงานสำเร็จและผลการทดสอบผ่านอย่างน้อยหนึ่งกรณี
+- [ ] **Failure Path:** มีกรณีที่ข้อมูลผิดหรือเกิดข้อผิดพลาดอย่างน้อยหนึ่งกรณี
+- [ ] **Stub:** ใช้ Dependency จำลองที่คืนค่าคงที่
+- [ ] **Spy:** ตรวจสอบจำนวนครั้งและพารามิเตอร์ที่ใช้เรียกฟังก์ชัน
+- [ ] **Mock:** ใช้ Dependency จำลองเพื่อตรวจสอบพฤติกรรมหรือการโต้ตอบ
+- [ ] **Faker:** ใช้ `@faker-js/faker` เพื่อสร้าง Test Data แบบเปลี่ยนแปลงได้
+- [ ] เขียนและรันกรณีเพิ่มเติมที่มีเหตุผลจาก Requirements และ Risk
+- [ ] เก็บหลักฐานผลรันทดสอบจริง
 
-### Terminology
-A **Stub** supplies predetermined responses without external work. A **Spy** records calls and arguments so interactions can be asserted. A **Mock** replaces a collaborator and allows expected behavior/interactions to be configured and verified. These are roles of test doubles, not always distinct library types.
+ช่องทำเครื่องหมายยังไม่ถูกติ๊ก เพราะต้องยืนยัน **ผลการรันจริง** ก่อน ไม่ใช่ดูเพียงว่ามีไฟล์ Test
 
-## Evidence to preserve
-Document installed versions, exact command, executed test count, passed/failed/skipped cases, failures and fixes, environment, and date. A test file existing in GitHub is **not** evidence of a passing test.
+## ความหมายของ Stub, Spy และ Mock
+- **Stub:** ทำหน้าที่ส่งค่าตอบกลับที่กำหนดไว้ล่วงหน้า เช่น คืนข้อมูลพรรคจำลอง โดยไม่ต้องอ่านฐานข้อมูล
+- **Spy:** บันทึกว่าฟังก์ชันถูกเรียกหรือไม่ จำนวนกี่ครั้ง และได้รับ Argument อะไร เพื่อใช้ตรวจสอบการโต้ตอบ
+- **Mock:** จำลองการทำงานของ Dependency และกำหนดพฤติกรรมหรือความคาดหวังเพื่อนำมาทดสอบ
 
-## Boundary of the current step
-This folder is scaffolding for the implementation. Test implementation, Faker installation and test execution must be verified separately. No test-run results are claimed yet.
+ทั้งสามอย่างเป็นรูปแบบการใช้ **Test Double** และในบาง Framework อาจใช้เครื่องมือเดียวกันสร้างได้หลายรูปแบบ
+
+## หลักฐานที่ต้องบันทึก
+ระบุเวอร์ชันเครื่องมือ คำสั่งที่รัน วันที่ทดสอบ จำนวนผ่าน/ไม่ผ่าน/ข้าม ปัญหาที่พบและการแก้ไข รวมถึง Commit SHA ที่ทดสอบ การมีไฟล์ Test บน GitHub เพียงอย่างเดียว **ไม่ใช่หลักฐานว่า Test ผ่าน**
+
+## สถานะงาน
+จัดโครงสร้างเอกสารและเขียน Test บางส่วนแล้ว แต่ยังไม่ยืนยันการรัน ไม่มีผลทดสอบที่สามารถอ้างว่า Pass ได้ ณ ขั้นตอนนี้
