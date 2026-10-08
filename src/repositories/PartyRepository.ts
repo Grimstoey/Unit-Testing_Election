@@ -5,19 +5,15 @@ export async function getAllParty() {
 }
 
 
-export async function createParty(name: string, logoUrl: string, policy: string, userId: number) {
-  const result = await prisma.party.create({
-    data: {
-      name: name,
-      logoUrl: logoUrl,
-      policy: policy,
-      createdBy: userId,
-      updatedBy: userId,
-    },
-  })
-  return result
+/** แยกส่วนเขียนข้อมูลเพื่อใช้ Prisma Test Double ใน Unit Test */
+export function makeCreateParty(write: (args: { data: {
+  name: string; logoUrl: string; policy: string; createdBy: number; updatedBy: number
+} }) => Promise<any>) {
+  return (name: string, logoUrl: string, policy: string, userId: number) =>
+    write({ data: { name, logoUrl, policy, createdBy: userId, updatedBy: userId } })
 }
 
+export const createParty = makeCreateParty((args) => prisma.party.create(args))
 
 export async function getPartyById(id: number) {
   return prisma.party.findUnique({
