@@ -11,6 +11,23 @@ git fetch origin
 git diff origin/main...origin/vnv/election-unit-testing
 ```
 
+## แผนภาพ Before / After
+
+```mermaid
+flowchart LR
+  subgraph Before["main"]
+    A["PartyService"] --> B["PartyRepository"]
+  end
+  subgraph After["vnv/election-unit-testing"]
+    C["PartyService"] --> D["createPartyUseCase"]
+    D --> E["validateCreateParty"]
+    D --> F["Injected PartyWriter"]
+    F --> G["PartyRepository"]
+  end
+```
+
+แผนภาพเปรียบเทียบเฉพาะจุดที่ปรับปรุงในเส้นทาง Service ของการสร้างพรรค
+
 ## สิ่งที่คงเดิม
 
 - Endpoint `POST /ec/parties` และลำดับ `requireAuth` → `requireRole(RoleName.EC)` → Controller
