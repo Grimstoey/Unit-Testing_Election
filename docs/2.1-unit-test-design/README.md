@@ -18,7 +18,7 @@
 | Party Repository | `src/repositories/PartyRepository.ts` | จัดรูปแบบข้อมูลที่ส่งให้ Prisma รวมถึง `createdBy`/`updatedBy` |
 | Prisma Error Handler | `src/middlewares/PrismaErrorHandler.ts` | แปลงข้อผิดพลาดฐานข้อมูลเป็นสถานะ HTTP ที่เหมาะสม |
 
-## แผนภาพเส้นทางการสร้างพรรคและจุดตรวจสอบ
+## 3. แผนภาพเส้นทางการสร้างพรรคและจุดตรวจสอบ
 
 ```mermaid
 flowchart TD
@@ -33,7 +33,7 @@ flowchart TD
 
 แผนภาพแสดงเส้นทางของฟีเจอร์ ส่วน Unit Tests แยกฐานข้อมูลด้วย Test Double จึงไม่ใช่ผลทดสอบการเชื่อมต่อ PostgreSQL จริง
 
-## 3. เทคนิคที่ใช้ในการออกแบบ
+## 4. เทคนิคที่ใช้ในการออกแบบ
 
 **Equivalence Partitioning (EP)** แบ่งข้อมูลขาเข้าเป็นกลุ่มที่มีพฤติกรรมเดียวกัน ได้แก่ ข้อความถูกต้อง, ไม่ระบุฟิลด์, `null`, String ว่าง และข้อความที่มีเฉพาะช่องว่าง จึงลดจำนวนกรณีโดยยังตรวจกลุ่มข้อมูลสำคัญได้
 
@@ -43,13 +43,13 @@ flowchart TD
 
 **Interaction Testing** ใช้ Test Double เพื่อยืนยันว่าระบบส่งข้อมูลไปยัง Dependency อย่างถูกต้อง รวมถึงตรวจสอบว่าข้อมูลที่ไม่ถูกต้องไม่ทำให้เรียกฟังก์ชันบันทึก
 
-## 4. การแยก Dependency
+## 5. การแยก Dependency
 
 ฟังก์ชัน `createPartyUseCase` รับ `writeParty` เป็นพารามิเตอร์ ทำให้ทดสอบ Logic โดยใช้ Stub, Spy และ Mock แทนการเรียกฐานข้อมูลจริง การทดสอบ Middleware จำลอง Request/Response และ `next()` จึงไม่จำเป็นต้องเริ่ม HTTP Server
 
 การตรวจสอบนี้ไม่ใช่ Integration Test ของ PostgreSQL, การอัปโหลด S3 หรือ End-to-End Test ของหน้าเว็บ
 
-## 5. เกณฑ์ยืนยันผล
+## 6. เกณฑ์ยืนยันผล
 
 กรณีทดสอบต้องระบุข้อมูลขาเข้า ผลลัพธ์ที่คาดหวัง และความเชื่อมโยงกับ Requirement โดยผล `PASS` หรือ `FAIL` ต้องมาจากการรันจริงเท่านั้น แยก Test Pass Rate ออกจาก Code Coverage ซึ่งเป็นตัวชี้วัดคนละประเภท
 
