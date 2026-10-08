@@ -22,6 +22,7 @@ Backend สำหรับระบบเลือกตั้งออนไล
 | [2.3 Unit Test Implementation](docs/2.3-unit-test-implementation/README.md) | เครื่องมือและ Test Doubles |
 | [Test Execution Report](docs/2.3-unit-test-implementation/test-execution-report.md) | หลักฐานผลการรัน |
 | [Coverage Report](docs/2.3-unit-test-implementation/coverage-report.md) | Coverage, เปรียบเทียบ Windows/Linux และข้อจำกัด |
+| [Final Submission Checklist](docs/FINAL-SUBMISSION-CHECKLIST.md) | ตรวจหลักฐาน ความครบถ้วน และข้อจำกัดก่อนส่งงาน |
 
 ### วิธีรัน Unit Tests และ Coverage (Git Bash / Windows)
 
