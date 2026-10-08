@@ -27,6 +27,8 @@ npm test
 
 ชุดทดสอบครอบคลุมการตรวจสอบ Token, EC Role, การแมป Audit Fields, Prisma P2002 และ Internal Server Error โดยอยู่ในไฟล์ `tests/auth-and-role.test.ts` และ `tests/party-persistence-and-errors.test.ts`
 
+กรณีทดสอบเพิ่มเติมเพื่อวิเคราะห์ Coverage อยู่ใน `tests/coverage-gap.test.ts` (UT-CP-022–028) โดยผลการรันและเปรียบเทียบก่อน–หลังแสดงใน [Coverage Report](./coverage-report.md)
+
 ## 4. วิธีการทดสอบ
 
 1. ติดตั้ง Dependency ด้วย `npm ci`
