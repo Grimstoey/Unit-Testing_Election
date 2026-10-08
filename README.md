@@ -8,6 +8,53 @@ Backend สำหรับระบบเลือกตั้งออนไล
 
 ---
 
+## 🧪 งาน Verification & Validation — Create Political Party
+
+การศึกษานี้ใช้ฟีเจอร์ `POST /ec/parties` เป็นกรณีศึกษาเพื่อออกแบบ ทดสอบ และเปรียบเทียบโค้ดก่อน–หลังปรับปรุง โดยจัดเก็บงานที่ Branch `vnv/election-unit-testing` แยกจากโค้ดอ้างอิงบน `main`
+
+| เอกสารส่งงาน | รายละเอียด |
+|---|---|
+| [2.1 Unit Test Design](docs/2.1-unit-test-design/README.md) | ขอบเขตและเทคนิคการออกแบบ |
+| [Test Cases](docs/2.1-unit-test-design/test-cases.md) | UT-CP-001 ถึง UT-CP-028 |
+| [Requirements Traceability](docs/2.1-unit-test-design/requirement-traceability.md) | เชื่อมโยง Requirement กับ Test Cases |
+| [2.2 Code Comparison](docs/2.2-code-comparison/README.md) | เปรียบเทียบ `main` กับ Branch งาน V&V |
+| [V&V Improvements and Security Audit](docs/2.2-code-comparison/vnv-improvements.md) | อธิบายการแก้ไขและความเสี่ยงจาก Dependencies |
+| [2.3 Unit Test Implementation](docs/2.3-unit-test-implementation/README.md) | เครื่องมือและ Test Doubles |
+| [Test Execution Report](docs/2.3-unit-test-implementation/test-execution-report.md) | หลักฐานผลการรัน |
+| [Coverage Report](docs/2.3-unit-test-implementation/coverage-report.md) | Coverage, เปรียบเทียบ Windows/Linux และข้อจำกัด |
+
+### วิธีรัน Unit Tests และ Coverage (Git Bash / Windows)
+
+ต้องมี Node.js 22 และ npm สำหรับการติดตั้ง Dependencies คำสั่งด้านล่างใช้ค่าทดสอบเท่านั้น ไม่ใช่ข้อมูลรับรองสำหรับระบบจริง
+
+```bash
+npm ci
+export DIRECT_URL="postgresql://test:test@localhost:5432/election_test"
+export JWT_SECRET="unit-test-only-secret-not-for-production"
+export JWT_EXPIRES_IN="1h"
+npx prisma generate
+npm run build
+npm test
+npm run test:coverage
+```
+
+การวัด Coverage ใช้ Node.js/V8 ครอบคลุมเฉพาะ 6 ไฟล์ที่เกี่ยวข้องกับการทดสอบ Unit ตามที่ระบุในรายงาน ผล 28 Tests ไม่ใช่หลักฐานว่า End-to-End หรือ Database Integration Tests ผ่าน
+
+### ผลการทดสอบล่าสุดที่ยืนยัน
+
+| รายการ | GitHub Actions (Linux) | Windows (Git Bash) |
+|---|---:|---:|
+| Tests Passed | **28/28** | **28/28** |
+| Line Coverage | 90.88% | 89.86% |
+| Branch Coverage | 90.99% | 90.99% |
+| Function Coverage | 80.60% | 80.60% |
+
+[หลักฐานการรัน GitHub Actions](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37767512280)
+
+ความต่าง Line Coverage 1.02 จุดเปอร์เซ็นต์ระหว่าง Windows และ Linux ยังไม่สามารถระบุสาเหตุแน่ชัด จึงแยกการรายงานตามสภาพแวดล้อมและไม่ถือว่าเป็น Test Failure ส่วน `npm audit` ตรวจพบ Dependencies ที่มี Advisory (34 รายการเมื่อรวม Dev และ 23 รายการเมื่อไม่รวม Dev) ซึ่งยังไม่ได้แก้ไขในขอบเขตการทดสอบนี้
+
+---
+
 ## 📌 ภาพรวมระบบ
 
 ระบบนี้แบ่งผู้ใช้งานหลักเป็น 3 กลุ่ม:
@@ -813,7 +860,8 @@ npm run seed
 | `npm run build` | `tsc && tsc-alias` | build โปรเจกต์ |
 | `npm start` | `node dist/server.js` | รัน production build |
 | `npm run seed` | `prisma db seed` | seed ข้อมูลตัวอย่าง |
-| `npm test` | `echo "Error: no test specified" && exit 1` | ยังไม่มี test จริง |
+| `npm run test:coverage` | Node.js V8 test coverage | วัด Coverage เฉพาะ 6 ไฟล์ของงาน V&V |
+| `npm test` | `tsx --test tests/*.test.ts` | รัน Unit Tests 28 กรณี |
 
 ---
 
@@ -846,7 +894,7 @@ SUPABASE_ENDPOINT_URL=...
 | `FRONTEND_URL` | ❌ | frontend URL สำหรับ CORS |
 | `PORT` | ❌ | port ของ server |
 
-> หมายเหตุ: ใน repository ปัจจุบันมีไฟล์ `.env` แต่ไม่ได้มี `.env.example`
+> หมายเหตุ: ไฟล์ `.env` เป็นไฟล์ตั้งค่าส่วนบุคคลซึ่งไม่ควร Commit ลง Repository ส่วนชุด Unit Tests ไม่ต้องเชื่อมต่อ PostgreSQL จริง
 
 ---
 
@@ -890,7 +938,7 @@ http://localhost:3000
 - Prisma errors ถูกจัดการผ่าน global error handler
 - CORS เปิดให้เฉพาะ origin ที่กำหนดใน `src/server.ts`
 - `dist/` จะมีไฟล์หลัง build
-- โปรเจกต์นี้ยังไม่มี automated test suite จริง
+- งาน V&V เพิ่ม Automated Unit Tests 28 กรณีบน Branch `vnv/election-unit-testing`; ไม่ใช่การทดสอบทุก Endpoint ของระบบ
 
 ---
 
