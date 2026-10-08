@@ -35,6 +35,6 @@ git diff origin/main...origin/vnv/election-unit-testing
 
 ## ผลการตรวจสอบ
 
-การ Build `tsc && tsc-alias` และ Unit Tests 11 กรณีแรกมีผลสำเร็จที่บันทึกไว้ใน [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) การเปลี่ยนแปลงและ Tests ที่เพิ่มหลังจากนั้นต้องอ้างอิงผลรันทดสอบฉบับล่าสุด ไม่ถือว่าผ่านโดยอัตโนมัติ
+ตรวจสอบเวอร์ชันที่มี Unit Tests ครบ 21 กรณีด้วย GitHub Actions แล้ว: `npm ci`, `npx prisma generate`, `npm run build` และ `npm test` ผ่านทั้งหมด (21 Passed, 0 Failed) ตาม [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) และ [หลักฐานการรัน](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37763536100)
 
 ดูรายละเอียดการปรับปรุงที่ [vnv-improvements.md](./vnv-improvements.md)
