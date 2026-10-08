@@ -1,64 +1,31 @@
-# บันทึกการปรับปรุงโค้ดตามหลัก Verification & Validation (V&V)
+# วิเคราะห์การปรับปรุงโค้ดตามหลัก Verification & Validation
 
-## 1. วัตถุประสงค์ในการเปรียบเทียบ
+## 1. ปัญหาที่ตรวจพบในเวอร์ชันต้นฉบับ
 
-ใช้ Branch `main` เป็นโค้ดต้นฉบับจากวิชา Backend และ Branch `vnv/election-unit-testing` เป็นโค้ดที่เพิ่มการตรวจสอบข้อมูล การแยก Dependency และ Unit Tests **โดยไม่แก้ไข `main`**
+ฟังก์ชัน `createPartyService` ใน `main` เรียก Repository โดยตรง ไม่มีการตรวจค่าว่างหรือการตัดช่องว่างก่อนบันทึก ซึ่งอาจทำให้ข้อมูลที่ไม่เป็นไปตาม `FR-10`, `FR-11` และ `FR-12` ถูกส่งถึง Persistence Layer นอกจากนี้คำสั่ง `npm test` เดิมไม่ได้เรียก Automated Tests
 
-การเปรียบเทียบนี้เป็น Milestone ระยะแรก ไม่ใช่รายงานสรุปงานทั้งหมด
+## 2. การปรับปรุง Input Validation
 
-## 2. ปัญหาหรือข้อจำกัดที่พบในโค้ดเดิม
+เพิ่ม `validateCreateParty` เพื่อปฏิเสธฟิลด์ที่ไม่ใช่ String, `null`, String ว่าง และข้อความที่มีเฉพาะช่องว่าง พร้อม Trim ชื่อพรรคและนโยบายก่อนส่งไปบันทึก การปรับปรุงนี้มุ่งยืนยัน Business Rule ที่ระบุว่าฟิลด์ต้องไม่ว่าง และช่วยแยก Logic ให้ทดสอบได้โดยตรง (`UT-CP-001`–`UT-CP-008`)
 
-1. `package.json` ตั้งค่า `npm test` ให้จบด้วย `no test specified` จึงยังไม่มี Test Suite ให้รัน
-2. `createPartyService` ส่งข้อมูลการสร้างพรรคไปยัง Repository โดยตรง โดยไม่มี Validation หรือการตัดช่องว่างใน Service
-3. Controller อ่านข้อมูลผู้ใช้จาก `req.body.user` ที่ `requireAuth` ใส่ไว้ และ Route มี `requireRole(RoleName.EC)`; จำเป็นต้องทดสอบว่าการตอบกลับ 401 และ 403 ยังถูกต้อง
-4. `PrismaErrorHandler` มีการจัดการ Prisma P2002 ให้เป็น HTTP 409 อยู่แล้ว จึงต้องรักษาพฤติกรรมนี้เมื่อขยาย Tests
+## 3. การแยก Dependency สำหรับทดสอบ
 
-## 3. สิ่งที่เปลี่ยนแปลงใน Branch การบ้าน
+ปรับ `PartyService` ให้ใช้ `createPartyUseCase` ซึ่งรับฟังก์ชัน `writeParty` เป็น Argument ภายนอก ทำให้การทดสอบไม่ต้องเขียนข้อมูลลง PostgreSQL จริง สามารถใช้ **Stub** ให้คืนค่าที่กำหนด, **Spy** ตรวจจำนวนการเรียก และ **Mock** ตรวจ Argument ที่ส่งไป (`UT-CP-015`–`UT-CP-017`)
 
-| รายการเปลี่ยนแปลง | สิ่งที่เปลี่ยน / เหตุผล | Test ที่เกี่ยวข้อง | สถานะ ณ Milestone 1 |
-|---|---|---|---|
-| เพิ่ม `validateCreateParty.ts` | ตรวจฟิลด์บังคับและจัดรูปแบบชื่อ/นโยบายตาม FR-10–FR-12 | UT-CP-001–008 | **เขียนและรันผ่าน 8 กรณี** |
-| เพิ่ม `createPartyUseCase.ts` | รับฟังก์ชันบันทึกข้อมูลจากภายนอก (Dependency Injection) เพื่อไม่ต้องเชื่อมต่อฐานข้อมูลจริงใน Unit Test | UT-CP-015–017 | **เขียนและรันผ่าน 3 กรณี** |
-| ปรับ `PartyService.ts` | ส่งงานการสร้างพรรคผ่าน Use Case ใหม่ที่ตรวจข้อมูลก่อนเรียก Repository | UT-CP-001–008, 015–017 | Build ผ่าน; ต้องเพิ่ม Tests ระดับ Service/Controller ตามกรณี |
-| ปรับ `package.json` | ใช้ `tsx --test tests/*.test.ts` เพื่อสั่งรัน Unit Tests | ทั้ง 11 กรณี | **`npm test` ผ่าน** |
-| เพิ่ม Faker | ต้องสร้างข้อมูลสุ่มตามโจทย์ข้อ 2.3.6 | UT-CP-018 | ยังไม่ดำเนินการ |
-| เพิ่ม Tests ของ Authentication/Authorization | ยืนยันความถูกต้องตาม FR-02, FR-03 | UT-CP-009–011 | ยังไม่ดำเนินการ |
-| เพิ่ม Tests ของ Audit, Duplicate และ Error Handling | ยืนยัน FR-05, FR-07, FR-09 และ Regression | UT-CP-012–014 | ยังไม่ดำเนินการ |
+ฟังก์ชัน `makeCreateParty` ใน Repository ใช้ตรวจการแมปข้อมูล Audit โดยจำลองการเรียกบันทึก และยืนยันว่า `createdBy` กับ `updatedBy` เท่ากับ User ID ของผู้สร้าง (`UT-CP-012`)
 
-## 4. ส่วนที่คงเดิม
+## 4. การตรวจสอบ Middleware และการจัดการข้อผิดพลาด
 
-- เส้นทาง API `POST /ec/parties` ใน `ECRoutes.ts` ยังคงใช้ Middleware `requireAuth` และ `requireRole(RoleName.EC)`
-- `PartyRepository.ts` ยังคงใช้ Prisma และกำหนด `createdBy` กับ `updatedBy` จาก User ID
-- `prisma/schema.prisma` ยังคงกำหนด `party.name @unique` และ Timestamp
-- การทดสอบระดับ Unit ในรอบแรกไม่ได้เปลี่ยนโครงสร้างฐานข้อมูลหรือ API Endpoint
+`makeRequireAuth` เพิ่มความสามารถในการส่ง Lookup Dependency เข้ามาสำหรับ Unit Test โดย Production Export `requireAuth` ยังคงใช้งาน `meService` เช่นเดิม ตรวจเงื่อนไขไม่ส่ง Token, Token ไม่ถูกต้อง, Token ทำให้เกิด Exception และกรณียืนยันตัวตนสำเร็จ (`UT-CP-009`, `010`, `019`, `021`)
 
-การคงโค้ดเดิมไว้ไม่ได้หมายความว่าพฤติกรรมทุกส่วนผ่านการทดสอบแล้ว ส่วนที่ยังไม่มี Test ต้องตรวจสอบใน Milestone ถัดไป
+Role Middleware ทดสอบผู้ใช้ที่ไม่ใช่ EC และผู้ใช้ที่เป็น EC (`UT-CP-011`, `020`) ส่วน Error Handler ทดสอบการแปลง Prisma P2002 เป็น HTTP 409 และการส่ง HTTP 500 เมื่อเกิดข้อผิดพลาดที่ไม่รู้จัก (`UT-CP-013`, `014`)
 
-## 5. หลักฐานผลทดสอบครั้งแรก (8 ตุลาคม 2026)
+## 5. การทดสอบด้วยข้อมูลแบบสุ่ม
 
-ผู้พัฒนารันบน Git Bash ใน Windows ที่ Branch `vnv/election-unit-testing` และส่งผล Terminal ดังนี้:
+ใช้ `@faker-js/faker` สร้างชื่อพรรคที่มี UUID รูป URL และข้อความนโยบายสำหรับ `UT-CP-018` โดยตรวจข้อมูลห้าชุดที่สร้างขึ้นในหนึ่งกรณีทดสอบ เพื่อช่วยลดการพึ่งพาค่าทดสอบคงที่
 
-```text
-> npm run build
-> tsc && tsc-alias
-(ไม่มี TypeScript Error)
+## 6. ผลการตรวจสอบที่มีหลักฐาน
 
-> npm test
-> tsx --test tests/*.test.ts
+ชุดทดสอบแรกจำนวน 11 กรณี **ผ่าน 11 กรณี ไม่ผ่าน 0 กรณี** และ Build สำเร็จ ตามรายละเอียดใน [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) ผลนี้เป็นหลักฐานของโค้ดที่ทดสอบในรอบดังกล่าว ไม่ได้ยืนยันว่าการปรับปรุงทุกไฟล์ในเวอร์ชันล่าสุดผ่านแล้ว
 
-tests 11
-pass 11
-fail 0
-cancelled 0
-skipped 0
-todo 0
-duration_ms 295.4625
-```
-
-**ผลที่ยืนยันได้:** Build สำเร็จ และ Test ที่รันทั้งหมดผ่าน 11/11 กรณี โดยไม่มี Failed/Skipped
-
-**ข้อจำกัด:** ยังไม่ได้วัด Code Coverage ไม่สามารถยืนยัน Commit SHA ของสำเนาในเครื่องจาก Output ที่ส่งมา และยังไม่ยืนยันความครบถ้วนของข้อกำหนดทุกข้อหรือผลของ Integration/API Testing ดูรายละเอียดผลแต่ละกรณีใน [รายงานผลการรัน](../2.3-unit-test-implementation/test-execution-report.md)
-
-## 6. ข้อเสนอสำหรับ Milestone ถัดไป
-
-ทำ Tests ที่ยังขาดและบันทึกผลเป็นรอบแยกต่างหาก ก่อนจัดทำตารางเปรียบเทียบก่อน/หลังฉบับสมบูรณ์ พร้อมอ้างอิง Git Diff และ Test Case ที่พิสูจน์การเปลี่ยนแปลงแต่ละจุด
+ส่วนที่คงเดิมและส่วนที่แก้ไขสามารถตรวจดูได้ด้วย Git Diff ระหว่าง `main` และ `vnv/election-unit-testing`
