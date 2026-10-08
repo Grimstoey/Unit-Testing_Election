@@ -1,22 +1,28 @@
-# 2.2 Code Comparison — Baseline and V&V branch
+# 2.2 การเปรียบเทียบโค้ดก่อนและหลังปรับปรุงตามหลัก V&V
 
-- **Original:** `main` (read-only baseline for the assignment).
-- **Improved:** `vnv/election-unit-testing` (all assignment changes).
-- Compare on GitHub using `main...vnv/election-unit-testing` or locally with `git diff main...vnv/election-unit-testing`.
-- Do **not** merge into `main` as part of this assignment.
+## Branch ที่ใช้เปรียบเทียบ
+- **`main`** — เก็บโค้ดต้นฉบับที่ใช้เป็นฐานเปรียบเทียบ ไม่แก้ไขสำหรับงานนี้
+- **`vnv/election-unit-testing`** — เก็บการพัฒนาและเอกสาร Unit Testing
 
-## Verified baseline observations from main
-| Location | Behavior observed before change | Testing / V&V concern |
+ดูความแตกต่างผ่าน GitHub Compare (`main...vnv/election-unit-testing`) หรือใช้คำสั่ง:
+```bash
+git diff main...vnv/election-unit-testing
+```
+
+จะไม่ Merge งานกลับเข้า `main` ระหว่างทำการบ้าน
+
+## สิ่งที่ตรวจพบในโค้ดต้นฉบับ (main)
+| ไฟล์ | พฤติกรรมเดิม | ประเด็นที่ควรพิจารณาตามหลัก V&V |
 |---|---|---|
-| `package.json` | `npm test` exits with 'no test specified' | No executable unit-test suite |
-| `src/routes/ECRoutes.ts` | `POST /parties` protected by `requireAuth` and `requireRole(RoleName.EC)` | Preserve authentication/authorization behavior |
-| `src/controllers/PartyController.ts` | Reads `name`, `logoUrl`, `policy` from body and `user.id`; calls service | Missing values are sent to service |
-| `src/services/PartyService.ts` | Delegates create directly to repository and wraps result as success | No local validation or normalization |
-| `src/repositories/PartyRepository.ts` | Prisma `party.create` mapping includes audit user ID | Dependency should be isolated for tests |
-| `prisma/schema.prisma` | `party.name @unique`, required name/logoUrl/policy, audit timestamps | Keep database constraints while validating before persistence |
-| `src/middlewares/PrismaErrorHandler.ts` | P2002 maps to 409, initialization errors map to 500 | Verify error mapping and absence of secrets |
+| `package.json` | `npm test` แจ้ง `no test specified` | ยังไม่มีชุด Unit Test ที่รันได้ |
+| `src/routes/ECRoutes.ts` | `POST /parties` ใช้ `requireAuth` และ `requireRole(RoleName.EC)` | ต้องรักษาการตรวจสอบตัวตนและสิทธิ์เดิม |
+| `src/controllers/PartyController.ts` | อ่าน name, logoUrl, policy และ user.id แล้วเรียก Service | ค่าว่างอาจถูกส่งต่อไปยัง Service |
+| `src/services/PartyService.ts` | เรียก Repository เพื่อสร้างพรรคทันทีและคืนผลสำเร็จ | ไม่มี Validation หรือการตัดช่องว่างใน Service |
+| `src/repositories/PartyRepository.ts` | ใช้ Prisma เพื่อบันทึกและกำหนดรหัสผู้สร้าง/ผู้แก้ไข | ควรแยกการทดสอบออกจากฐานข้อมูลจริง |
+| `prisma/schema.prisma` | ชื่อพรรคเป็น Unique และมีฟิลด์ข้อมูล/เวลา | รักษา Database Constraint พร้อมตรวจข้อมูลก่อนบันทึก |
+| `src/middlewares/PrismaErrorHandler.ts` | จัดการ Prisma P2002 ด้วย 409 และข้อผิดพลาดเชื่อมต่อด้วย 500 | ต้องทดสอบการส่งสถานะและการไม่เปิดเผยข้อมูลอ่อนไหว |
 
-## Comparison method
-For each changed production file, document (1) unchanged behavior, (2) exact code differences with before/after references, (3) related requirement or defect, (4) test IDs that verify the change, (5) observed outcome and trade-offs.
+## วิธีจัดทำรายงานเปรียบเทียบฉบับสมบูรณ์
+สำหรับทุกไฟล์ที่แก้ไข จะอธิบาย (1) สิ่งที่คงเดิม (2) จุดที่เปลี่ยนจาก Before เป็น After (3) ข้อกำหนดหรือปัญหาที่เกี่ยวข้อง (4) Test Case ที่ตรวจสอบ และ (5) ผลลัพธ์จริงพร้อมข้อดีและข้อจำกัด
 
-**This file records baseline observations, not a claim that improvements or test execution have already completed.** Add final comparison evidence only after implementation.
+**สถานะ:** นี่เป็นข้อมูลสำรวจโค้ดเดิมและแผนการเปรียบเทียบ ยังไม่ใช่รายงานผลการทดสอบฉบับสมบูรณ์
