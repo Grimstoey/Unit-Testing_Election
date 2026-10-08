@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DIRECT_URL: postgresql://test:test@localhost:5432/election_test
+      JWT_SECRET: unit-test-only-secret-not-for-production
+      JWT_EXPIRES_IN: 1h
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
