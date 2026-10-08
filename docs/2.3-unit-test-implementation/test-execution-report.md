@@ -64,7 +64,39 @@ npm test
 
 ผลทดสอบนี้ครอบคลุม `UT-CP-001` ถึง `UT-CP-021` รวมกรณี Authentication, Authorization, Audit Mapping, Duplicate Error, Internal Error และ Faker ที่เพิ่มจากชุดเดิม โดยอ้างอิงผลจาก Workflow จริง ไม่ใช่การอนุมานจากไฟล์ Test
 
-## 5. ชุดทดสอบใน Source Code ปัจจุบัน
+## 5. ผลการทดสอบบน Windows
+
+ทดสอบด้วย Node.js v22.14.0 ผ่าน Git Bash ในวันที่ 8 ตุลาคม 2026 โดยกำหนด Environment สำหรับ Authentication Tests ด้วยคำสั่ง:
+
+```bash
+export JWT_SECRET="unit-test-only-secret-not-for-production"
+export JWT_EXPIRES_IN="1h"
+npm test
+```
+
+| ตัวชี้วัด | ผล |
+|---|---:|
+| Tests | **21** |
+| Passed | **21** |
+| Failed | **0** |
+| Cancelled | **0** |
+| Skipped | **0** |
+| Todo | **0** |
+| Duration | **745.7483 ms** |
+
+ก่อนกำหนดค่าตัวแปรดังกล่าว เกิด Error `Missing environment variable: JWT_SECRET` ขณะโหลดไฟล์ `auth-and-role.test.ts` หลังแก้ไขการตั้งค่า Environment ชุดทดสอบทั้งหมดจึงผ่าน โดยผลนี้เป็นผลการรัน Unit Tests ส่วน `npm run build` ผ่านในการรันก่อนหน้า
+
+```mermaid
+pie showData
+  title Windows Unit Test Results — 21 tests
+  "Passed" : 21
+  "Failed" : 0
+  "Skipped" : 0
+```
+
+กราฟแสดงเฉพาะจำนวนกรณีที่ผ่านหรือล้มเหลว ไม่ใช่ค่า Code Coverage
+
+## 6. ชุดทดสอบใน Source Code ปัจจุบัน
 
 | ไฟล์ | กรณีที่มีโค้ด |
 |---|---|
@@ -76,11 +108,13 @@ npm test
 
 ผล 11 Tests ในหัวข้อก่อนหน้าเป็นผลการทดสอบรอบแรก ส่วนผลล่าสุด 21 Tests ได้รับการยืนยันจาก GitHub Actions Run ที่อ้างอิงในหัวข้อ 4
 
-## 6. การทำซ้ำการทดสอบ
+## 7. การทำซ้ำการทดสอบ
 
 ```bash
 npm ci
 export DIRECT_URL="postgresql://test:test@localhost:5432/election_test"
+export JWT_SECRET="unit-test-only-secret-not-for-production"
+export JWT_EXPIRES_IN="1h"
 npx prisma generate
 npm run build
 npm test
@@ -88,6 +122,6 @@ npm test
 
 ค่า `DIRECT_URL` ในตัวอย่างใช้เพื่อโหลด Prisma Config สำหรับ Unit Testing เท่านั้น ไม่ใช่ฐานข้อมูลที่มีอยู่จริงหรือใช้รัน Migration
 
-## 7. ขอบเขตของผลทดสอบ
+## 8. ขอบเขตของผลทดสอบ
 
 Unit Tests ที่ใช้ Dependency จำลองไม่ยืนยันการเชื่อมต่อฐานข้อมูล การบังคับ Unique Constraint โดย PostgreSQL การสร้าง Timestamp จากฐานข้อมูลจริง และพฤติกรรมหน้าเว็บแบบ End-to-End ส่วน Test Pass Rate และ Code Coverage เป็นคนละตัวชี้วัด โดยยังไม่มีค่า Coverage ที่วัดยืนยันในรายงานนี้
