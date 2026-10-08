@@ -26,7 +26,7 @@ Role Middleware ทดสอบผู้ใช้ที่ไม่ใช่ EC 
 
 ## 6. ผลการตรวจสอบที่มีหลักฐาน
 
-ชุด Unit Tests 21 กรณีได้รับการตรวจสอบผ่าน GitHub Actions: **ผ่าน 21 กรณี ไม่ผ่าน 0 กรณี** และ Build สำเร็จบน Commit `90bf85727eb6f7745980588729cc002f583cbcda` โดยมีหลักฐานที่ [GitHub Actions Run](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37763536100) และ [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) ผลนี้ไม่ใช่ Code Coverage หรือการทดสอบเชื่อมต่อฐานข้อมูลจริง
+ชุด Unit Tests ล่าสุด **28 กรณีผ่านทั้งหมด** ทั้ง GitHub Actions และ Windows; Build ผ่านทั้งสองสภาพแวดล้อม โดยมี [หลักฐาน GitHub Actions](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37767512280), [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) และ [Coverage Report](../2.3-unit-test-implementation/coverage-report.md) ผล Coverage ไม่ใช่การทดสอบเชื่อมต่อฐานข้อมูลจริง
 
 ส่วนที่คงเดิมและส่วนที่แก้ไขสามารถตรวจดูได้ด้วย Git Diff ระหว่าง `main` และ `vnv/election-unit-testing`
 
