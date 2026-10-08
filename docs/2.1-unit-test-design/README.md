@@ -18,6 +18,21 @@
 | Party Repository | `src/repositories/PartyRepository.ts` | จัดรูปแบบข้อมูลที่ส่งให้ Prisma รวมถึง `createdBy`/`updatedBy` |
 | Prisma Error Handler | `src/middlewares/PrismaErrorHandler.ts` | แปลงข้อผิดพลาดฐานข้อมูลเป็นสถานะ HTTP ที่เหมาะสม |
 
+## แผนภาพเส้นทางการสร้างพรรคและจุดตรวจสอบ
+
+```mermaid
+flowchart TD
+  A["POST /ec/parties"] --> B["requireAuth"]
+  B --> C["requireRole EC"]
+  C --> D["createPartyController"]
+  D --> E["createPartyUseCase"]
+  E --> F{"validateCreateParty"}
+  F -->|Invalid| G["Validation error 400"]
+  F -->|Valid| H["PartyRepository / Prisma"]
+```
+
+แผนภาพแสดงเส้นทางของฟีเจอร์ ส่วน Unit Tests แยกฐานข้อมูลด้วย Test Double จึงไม่ใช่ผลทดสอบการเชื่อมต่อ PostgreSQL จริง
+
 ## 3. เทคนิคที่ใช้ในการออกแบบ
 
 **Equivalence Partitioning (EP)** แบ่งข้อมูลขาเข้าเป็นกลุ่มที่มีพฤติกรรมเดียวกัน ได้แก่ ข้อความถูกต้อง, ไม่ระบุฟิลด์, `null`, String ว่าง และข้อความที่มีเฉพาะช่องว่าง จึงลดจำนวนกรณีโดยยังตรวจกลุ่มข้อมูลสำคัญได้
