@@ -29,3 +29,22 @@ Role Middleware ทดสอบผู้ใช้ที่ไม่ใช่ EC 
 ชุด Unit Tests 21 กรณีได้รับการตรวจสอบผ่าน GitHub Actions: **ผ่าน 21 กรณี ไม่ผ่าน 0 กรณี** และ Build สำเร็จบน Commit `90bf85727eb6f7745980588729cc002f583cbcda` โดยมีหลักฐานที่ [GitHub Actions Run](https://github.com/Grimstoey/Unit-Testing_Election/actions/runs/37763536100) และ [Test Execution Report](../2.3-unit-test-implementation/test-execution-report.md) ผลนี้ไม่ใช่ Code Coverage หรือการทดสอบเชื่อมต่อฐานข้อมูลจริง
 
 ส่วนที่คงเดิมและส่วนที่แก้ไขสามารถตรวจดูได้ด้วย Git Diff ระหว่าง `main` และ `vnv/election-unit-testing`
+
+
+## 7. ผลการตรวจสอบ Dependency Security
+
+ดำเนินการตรวจด้วย `npm audit` และ `npm audit --omit=dev` วันที่ 8 ตุลาคม 2026 เพื่อระบุความเสี่ยงของแพ็กเกจที่ติดตั้ง
+
+![เปรียบเทียบจำนวนช่องโหว่ตามระดับความรุนแรง](./assets/dependency-audit.svg)
+
+| ระดับความรุนแรง | ทั้งหมด | ไม่รวม Dev Dependencies |
+|---|---:|---:|
+| Critical | 1 | 1 |
+| High | 25 | 14 |
+| Moderate | 7 | 7 |
+| Low | 1 | 1 |
+| **รวม** | **34** | **23** |
+
+ผล Audit พบช่องโหว่ Critical ใน `proxy-addr` และ High ในกลุ่มแพ็กเกจ เช่น `multer`, `sharp`, `path-to-regexp` และ Dependencies ที่เกี่ยวข้องกับ Prisma จำนวนการแจ้งเตือนนี้เป็นผลตรวจแพ็กเกจ ไม่ใช่หลักฐานว่า API สร้างพรรคมีช่องโหว่ที่นำไปโจมตีได้จริง
+
+การแก้บางรายการด้วย `npm audit fix --force` เสนอให้เปลี่ยน Prisma 7 เป็น 6.19.3 หรือเปลี่ยน Major Version ของแพ็กเกจอื่น ซึ่งมีความเสี่ยงต่อ Compatibility จึงไม่ได้ดำเนินการ Force Update โดยไม่มี Regression Test หลังเปลี่ยน Dependencies
